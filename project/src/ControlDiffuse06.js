@@ -84,7 +84,7 @@ var gl;				// main() sets this to the rendering context for WebGL. This object
 var g_canvas = document.getElementById('webgl');
 
 // --------------------- Eye positions -----------------------------------
-var g_EyeX = -3, g_EyeY = 4, g_EyeZ = -1; // Eye position
+var g_EyeX = 3, g_EyeY = -4, g_EyeZ = 1; // Eye position
 var forward = 0.5;
 var sideway = 0.3;
 var theta = -3.14;
@@ -518,11 +518,11 @@ function drawGroundGrid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalM
 //==============================================================================
   // Clear <canvas>  colors AND the depth buffer
   	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+	// modelMatrix = popMatrix();
 
 	//-------Create Spinning Tetrahedron-----------------------------------------
 	// (Projection and View matrices, if you had them, would go here)
-	modelMatrix.setTranslate(-0.4,-0.4, 0.0);  // 'set' means DISCARD old matrix,
+	modelMatrix.translate(-0.4,-0.4, 0.0);  // 'set' means DISCARD old matrix,
 	pushMatrix(modelMatrix);
 	pushMatrix(modelMatrix);
 	// (drawing axes centered in CVV), and then make new
