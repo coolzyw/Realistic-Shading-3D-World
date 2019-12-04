@@ -251,12 +251,6 @@ function drawTwoView(gl, n, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMa
 	drawAll(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);   // Draw shapes
 }
 
-function drawAll(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
-	drawGroundGrid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);
-	drawCube(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);
-}
-
-
 function makePyramid() {
 	var c30 = Math.sqrt(0.75);					// == cos(30deg) == sqrt(3) / 2
 	var sq2	= Math.sqrt(2.0);
@@ -602,8 +596,15 @@ function initVertexBuffer(gl) {
   return nn;
 }
 
+function drawAll(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
+	drawPyramid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);
+	drawCube(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);
 
-function drawGroundGrid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
+	drawGroundGrid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);
+}
+
+
+function drawPyramid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
 //==============================================================================
   // Clear <canvas>  colors AND the depth buffer
   	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -650,7 +651,9 @@ function drawCube(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix,
 	gl.drawArrays(gl.TRIANGLES,             // use this drawing primitive, and
 		cubeStart / floatsPerVertex, // start at this vertex number, and
 		cubeVerts.length / floatsPerVertex);   // draw this many vertices
+}
 
+function drawGroundGrid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
 	// draw ground grid
 	modelMatrix = popMatrix();
 	modelMatrix.translate(1,0,0);
