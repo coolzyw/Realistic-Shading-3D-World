@@ -252,6 +252,14 @@ var uLoc_NormalMatrix = false;
 // global vars that contain the values we send thru those uniforms,
 //  ... for our camera:
 var	eyePosWorld = new Float32Array(3);	// x,y,z in world coords
+
+// --------------------- Eye positions -----------------------------------
+var g_EyeX = -0.5, g_EyeY = 2, g_EyeZ = 1; // Eye position
+var forward = 0.5;
+var sideway = 0.3;
+var theta = -3.14;
+var turn_height = 0;
+
 //  ... for our transforms:
 var modelMatrix = new Matrix4();  // Model matrix
 var	mvpMatrix 	= new Matrix4();	// Model-view-projection matrix
@@ -363,7 +371,7 @@ function main() {
 		return;
 	}
 	// Position the camera in world coordinates:
-	eyePosWorld.set([6.0, 0.0, 0.0]);
+	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
 	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
 	// (Note: uniform4fv() expects 4-element float32Array as its 2nd argument)
 	
@@ -409,9 +417,9 @@ function draw() {
   // Calculate the view projection matrix
   mvpMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
   mvpMatrix.lookAt(	eyePosWorld[0], eyePosWorld[1], eyePosWorld[2], // eye pos
-  									0,  0, 0, 				// aim-point (in world coords)
+	  g_EyeX + Math.sin(theta),  g_EyeY + Math.cos(theta), g_EyeZ + turn_height, 				// aim-point (in world coords)
 									  0,  0, 1);				// up (in world coords)
-  mvpMatrix.multiply(modelMatrix);
+	mvpMatrix.multiply(modelMatrix);
   // Calculate the matrix to transform the normal based on the model matrix
   normalMatrix.setInverseOf(modelMatrix);
   normalMatrix.transpose();
@@ -428,9 +436,10 @@ function draw() {
   gl.drawElements(gl.TRIANGLES, n_vcount, gl.UNSIGNED_SHORT, 0);
 }
 
+
 function initVertexBuffers(gl) { // Create a sphere
 //-------------------------------------------------------------------------------
-  var SPHERE_DIV = 13; //default: 13.  JT: try others: 11,9,7,5,4,3,2,
+  var SPHERE_DIV = 15; //default: 13.  JT: try others: 11,9,7,5,4,3,2,
 
   var i, ai, si, ci;
   var j, aj, sj, cj;
@@ -665,33 +674,67 @@ function myKeyDown(ev) {
 // see:    http://javascript.info/tutorial/keyboard-events
 //
 
-	switch(ev.keyCode) {			// keycodes !=ASCII, but are very consistent for 
+	switch(ev.keyCode) {			// keycodes !=ASCII, but are very consistent for
 	//	nearly all non-alphanumeric keys for nearly all keyboards in all countries.
 		case 37:		// left-arrow key
 			// print in console:
 			console.log(' left-arrow.');
 			// and print on webpage in the <div> element with id='Result':
-  		document.getElementById('Result').innerHTML =
+  			document.getElementById('Result').innerHTML =
   			' Left Arrow:keyCode='+ev.keyCode;
+			g_EyeX -= Math.cos(theta) * sideway;
+			g_EyeY -= -Math.sin(theta) * sideway;
+			eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+			draw();
 			break;
 		case 38:		// up-arrow key
 			console.log('   up-arrow.');
-  		document.getElementById('Result').innerHTML =
+  			document.getElementById('Result').innerHTML =
   			'   Up Arrow:keyCode='+ev.keyCode;
+			g_EyeX += Math.sin(theta) * forward;
+			g_EyeY += Math.cos(theta) * forward;
+			g_EyeZ += turn_height * forward;
+			eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+			draw();
 			break;
 		case 39:		// right-arrow key
 			console.log('right-arrow.');
   		document.getElementById('Result').innerHTML =
   			'Right Arrow:keyCode='+ev.keyCode;
-  		break;
+			g_EyeX -= -Math.cos(theta) * sideway;
+			g_EyeY -= Math.sin(theta) * sideway;
+			eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+			draw();
+  			break;
 		case 40:		// down-arrow key
 			console.log(' down-arrow.');
-  		document.getElementById('Result').innerHTML =
+  			document.getElementById('Result').innerHTML =
   			' Down Arrow:keyCode='+ev.keyCode;
-  		break;
+			g_EyeX -= Math.sin(theta) * forward;
+			g_EyeY -= Math.cos(theta) * forward;
+			g_EyeZ -= turn_height * forward;
+			eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+			draw();
+  			break;
+		case 87: // W
+			turn_height += 0.03;
+			draw();
+			break;
+		case 65: // A
+			theta -= 0.03;
+			draw();
+			break;
+		case 83:
+			turn_height -= 0.03;
+			draw();
+			break;
+		case 68:
+			theta += 0.03;
+			draw();
+			break;
 		default:
 //			console.log('myKeyDown()--keycode=', ev.keyCode, ', charCode=', ev.charCode);
-  		document.getElementById('Result').innerHTML =
+  			document.getElementById('Result').innerHTML =
   		    'myKeyDown()--keyCode='+ev.keyCode;
 			break;
 	}
