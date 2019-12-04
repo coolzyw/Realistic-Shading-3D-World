@@ -8,10 +8,10 @@
 // 										," 3rd Ed. Chapter 4 on quaternions,
 // merged and modified to became:
 //
-// ControlQuaternion.js for EECS 351-1, 
+// ControlQuaternion.js for EECS 351-1,
 //									Northwestern Univ. Jack Tumblin
 
-//		--demonstrate several different user I/O methods: 
+//		--demonstrate several different user I/O methods:
 //				--Webpage pushbuttons and 'innerHTML' for text display
 //				--Mouse click & drag within our WebGL-hosting 'canvas'
 //		--demonstrate use of quaternions for user-controlled rotation
@@ -19,8 +19,8 @@
 //	2016.02.12--In-class Activity: add basic diffuse lighting to determine
 //							each vertex color.
 // -----PLAN:--------------
-//   	a)--Add 'surface normal' attributes to each of the vertices created in the 
-//	initVertexBufferobject() function.  (Be sure you adjust the rest of the code 
+//   	a)--Add 'surface normal' attributes to each of the vertices created in the
+//	initVertexBufferobject() function.  (Be sure you adjust the rest of the code
 //	to work properly with these new vertices that have an additional attribute).
 //		(test it--in the vertex shader program, what should happen if you add a fraction
 //		  of the normal vector to the position attribute for each vertex?
@@ -28,16 +28,16 @@
 //			Bugs?  set all normals to zero except one, add normals to position, see
 //						 on-screen the direction for each individual face's normal vector )
 //
-// 		b)--Add a 'normal matrix' transform; be sure to do all needed setup in 
-//	your JavaScript program and in your your GLSL shader programs. You will need 
+// 		b)--Add a 'normal matrix' transform; be sure to do all needed setup in
+//	your JavaScript program and in your your GLSL shader programs. You will need
 //	to use those shaders to compute the dot-product of :
-//      -- the unit-length surface normal vector N (unit-length? CAREFUL! if you 
+//      -- the unit-length surface normal vector N (unit-length? CAREFUL! if you
 //			transformed that normal vector you may have changed its maginitude).
 //      --a lighting direction vector (or just use world-space '+Z' axis).
 //
-//		c)--In the shader(s), use the dot-product result as a weight for the 
+//		c)--In the shader(s), use the dot-product result as a weight for the
 // 	vertex color, yielding simple diffuse shading. CAREFUL! dot-products can have
-//	negative results, but we need a result restricted to stay within 0 to +1. 
+//	negative results, but we need a result restricted to stay within 0 to +1.
 //
 // Vertex shader program----------------------------------
 var VSHADER_SOURCE =
@@ -183,9 +183,9 @@ var ANGLE_STEP = 45.0;  // default rotation angle rate (deg/sec)
 // Global vars for mouse click-and-drag for rotation.
 var isDrag=false;		// mouse-drag: true when user holds down mouse button
 var xMclik=0.0;			// last mouse button-down position (in CVV coords)
-var yMclik=0.0;   
+var yMclik=0.0;
 var xMdragTot=0.0;	// total (accumulated) mouse-drag amounts (in CVV coords).
-var yMdragTot=0.0;  
+var yMdragTot=0.0;
 
 var qNew = new Quaternion(0,0,0,1); // most-recent mouse drag's rotation
 var qTot = new Quaternion(0,0,0,1);	// 'current' orientation (made from qNew)
@@ -228,55 +228,55 @@ var currentAngle = 0;
 
 function main() {
 //==============================================================================
-  // Retrieve <canvas> element
-  canvas = document.getElementById('webgl');
+	// Retrieve <canvas> element
+	canvas = document.getElementById('webgl');
 
-  // Get the rendering context for WebGL
-  var myGL = getWebGLContext(g_canvas);
-  if (!myGL) {
-    console.log('Failed to get the rendering context for WebGL');
-    return;
-  }
+	// Get the rendering context for WebGL
+	var myGL = getWebGLContext(g_canvas);
+	if (!myGL) {
+		console.log('Failed to get the rendering context for WebGL');
+		return;
+	}
 
-  gl = myGL;	// make it global--for every function to use.
+	gl = myGL;	// make it global--for every function to use.
 
 	window.addEventListener("keydown", myKeyDown, false);
 
-  // Initialize shaders
-  if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
-    console.log('Failed to intialize shaders.');
-    return;
-  }
+	// Initialize shaders
+	if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+		console.log('Failed to intialize shaders.');
+		return;
+	}
 
-  // Initialize a Vertex Buffer in the graphics system to hold our vertices
-  var n = initVertexBuffer(gl);
-  if (n < 0) {
-    console.log('Failed to set the vertex information');
-    return;
-  }
+	// Initialize a Vertex Buffer in the graphics system to hold our vertices
+	var n = initVertexBuffer(gl);
+	if (n < 0) {
+		console.log('Failed to set the vertex information');
+		return;
+	}
 	// Register the Mouse & Keyboard Event-handlers-------------------------------
 	// If users press any keys on the keyboard or move, click or drag the mouse,
-	// the operating system records them as 'events' (small text strings that 
-	// can trigger calls to functions within running programs). JavaScript 
+	// the operating system records them as 'events' (small text strings that
+	// can trigger calls to functions within running programs). JavaScript
 	// programs running within HTML webpages can respond to these 'events' if we:
 	//		1) write an 'event handler' function (called when event happens) and
 	//		2) 'register' that function--connect it to the desired HTML page event. //
 	// Here's how to 'register' all mouse events found within our HTML-5 canvas:
-  canvas.onmousedown	=	function(ev){myMouseDown( ev, gl, canvas) }; 
-  					// when user's mouse button goes down, call mouseDown() function
-  canvas.onmousemove = 	function(ev){myMouseMove( ev, gl, canvas) };
-											// when the mouse moves, call mouseMove() function					
-  canvas.onmouseup = 		function(ev){myMouseUp(   ev, gl, canvas)};
-  					// NOTE! 'onclick' event is SAME as on 'mouseup' event
-  					// in Chrome Brower on MS Windows 7, and possibly other 
-  					// operating systems; thus I use 'mouseup' instead.
-  
-	// END Mouse & Keyboard Event-Handlers-----------------------------------
-	
-  // Specify the color for clearing <canvas>
-  gl.clearColor(0.3, 0.3, 0.3, 1.0);
+	canvas.onmousedown	=	function(ev){myMouseDown( ev, gl, canvas) };
+	// when user's mouse button goes down, call mouseDown() function
+	canvas.onmousemove = 	function(ev){myMouseMove( ev, gl, canvas) };
+	// when the mouse moves, call mouseMove() function
+	canvas.onmouseup = 		function(ev){myMouseUp(   ev, gl, canvas)};
+	// NOTE! 'onclick' event is SAME as on 'mouseup' event
+	// in Chrome Brower on MS Windows 7, and possibly other
+	// operating systems; thus I use 'mouseup' instead.
 
-	// NEW!! Enable 3D depth-test when drawing: don't over-draw at any pixel 
+	// END Mouse & Keyboard Event-Handlers-----------------------------------
+
+	// Specify the color for clearing <canvas>
+	gl.clearColor(0.3, 0.3, 0.3, 1.0);
+
+	// NEW!! Enable 3D depth-test when drawing: don't over-draw at any pixel
 	// unless the new Z value is closer to the eye than the old one..
 	gl.depthFunc(gl.LESS);			 // WebGL default setting: (default)
 	gl.enable(gl.DEPTH_TEST);
@@ -332,31 +332,6 @@ function main() {
 	lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
 
 
-
-	
-	// Create 'Uniform' vars to send to GPU----------------------------------
-  // Get handle to graphics system's storage location for u_ModelMatrix
-  var u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
-  if (!u_ModelMatrix) { 
-    console.log('Failed to get GPU storage location for u_ModelMatrix');
-    return;
-  }
-  // Create our JavaScript 'model' matrix (we send its values to GPU)
-  var modelMatrix = new Matrix4();
-  //------------------------------------------------------------------
-	// Get handle to graphics systems' storage location for u_NormalMatrix
-	var u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
-	if(!u_NormalMatrix) {
-		console.log('Failed to get GPU storage location for u_NormalMatrix');
-		return
-	}
-	// Create our JavaScript 'normal' matrix (we send its values to GPU
-	var normalMatrix = new Matrix4();
-	// (holds inverse-transpose of 'model' matrix.  Transform vertex positions
-	// in VBO by 'model' matrix to convert to 'world' coordinates, and 
-	// transform surface normal vectors by 'normal' matrix to convert to 'world').
-	//------------------------------------------------------------------
-
 	// NEW! -- make new canvas to fit the browser-window size;
 	drawResize(gl, n);   // On this first call, Chrome browser seems to use the
 	// initial fixed canvas size we set in the HTML file;
@@ -364,24 +339,24 @@ function main() {
 	// size & location where you last closed it, so
 	drawResize(gl, n);   // Call drawResize() a SECOND time to re-size canvas to
 	// match the current browser size.
-  // Create, init current rotation angle value in JavaScript
-  
+	// Create, init current rotation angle value in JavaScript
+
 //====================================
 	testQuaternions();		// test fcn at end of file
 //=====================================
 
-  // ANIMATION: create 'tick' variable whose value is this function:
-  //----------------- 
-  var tick = function() {
-    currentAngle = animate(currentAngle);  // Update the rotation angle
-	  drawResize(gl, n);
+	// ANIMATION: create 'tick' variable whose value is this function:
+	//-----------------
+	var tick = function() {
+		currentAngle = animate(currentAngle);  // Update the rotation angle
+		drawResize(gl, n);
 //    console.log('currentAngle=',currentAngle); // put text in console.
-    requestAnimationFrame(tick, canvas);   
-    									// Request that the browser re-draw the webpage
-    									// (causes webpage to endlessly re-draw itself)
-  };
-  tick();							// start (and continue) animation: draw current image
-	
+		requestAnimationFrame(tick, canvas);
+		// Request that the browser re-draw the webpage
+		// (causes webpage to endlessly re-draw itself)
+	};
+	tick();							// start (and continue) animation: draw current image
+
 }
 
 function drawResize(gl, n) {
@@ -406,7 +381,6 @@ function drawTwoView(gl, n) {
 	// Specify the color for clearing <canvas>
 	// NEW!! Enable 3D depth-test when drawing: don't over-draw at any pixel
 	// unless the new Z value is closer to the eye than the old one..
-//	gl.depthFunc(gl.LESS);			 // WebGL default setting: (default)
 	gl.enable(gl.DEPTH_TEST);
 
 	// Get handle to graphics system's storage location of u_ModelMatrix
@@ -420,7 +394,7 @@ function drawTwoView(gl, n) {
 
 	var ratio = (innerWidth) / innerHeight;
 	gl.viewport(0, 0, g_canvas.width, g_canvas.height);
-	// modelMatrix.setIdentity();    // DEFINE 'world-space' coords.
+	modelMatrix.setIdentity();    // DEFINE 'world-space' coords.
 	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
 		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
 		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
@@ -448,21 +422,19 @@ function drawAll(gl, n) {
 	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
 	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
 
-
+	drawGroundGrid(gl, n);
 	drawPyramid(gl, n);
 	drawCube(gl, n);
 
-	drawGroundGrid(gl, n);
+
 }
 
 
 function drawPyramid(gl, n) {
 	//-------Create Spinning Tetrahedron-----------------------------------------
 	// (Projection and View matrices, if you had them, would go here)
-	modelMatrix.setTranslate(-0.4,-0.4, 0.0);  // 'set' means DISCARD old matrix,
-	pushMatrix(modelMatrix);
-	pushMatrix(modelMatrix);
-	pushMatrix(modelMatrix);
+	modelMatrix = popMatrix();
+	modelMatrix.translate(-0.4,-0.4, 0.0);  // 'set' means DISCARD old matrix,
 	// (drawing axes centered in CVV), and then make new
 	// drawing axes moved to the lower-left corner of CVV.
 	modelMatrix.scale(1,1,-1);							// convert to left-handed coord sys
@@ -490,11 +462,11 @@ function drawCube(gl, n) {
 	modelMatrix = popMatrix();
 	modelMatrix.translate(2,0,0);
 	modelMatrix.scale(0.5,0.5,0.5);
-	normalMatrix.setInverseOf(modelMatrix);
-	normalMatrix.transpose();
+	// normalMatrix.setInverseOf(modelMatrix);
+	// normalMatrix.transpose();
 	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
 	// Pass our current Normal matrix to the vertex shaders:
-	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+	// gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
 	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
 	gl.drawArrays(gl.TRIANGLES,             // use this drawing primitive, and
 		cubeStart / floatsPerVertex, // start at this vertex number, and
@@ -503,13 +475,15 @@ function drawCube(gl, n) {
 
 function drawGroundGrid(gl, n) {
 	// draw ground grid
-	modelMatrix = popMatrix();
+	pushMatrix(modelMatrix);
+	pushMatrix(modelMatrix);
+	pushMatrix(modelMatrix);
+
 	modelMatrix.translate(1,0,0);
-	normalMatrix.setInverseOf(modelMatrix);
-	normalMatrix.transpose();
+	// normalMatrix.setInverseOf(modelMatrix);
+	// normalMatrix.transpose();
+
 	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
-	// Pass our current Normal matrix to the vertex shaders:
-	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
 	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
 	gl.drawArrays(gl.LINES,             // use this drawing primitive, and
 		gndStart / floatsPerVertex, // start at this vertex number, and
@@ -521,16 +495,16 @@ var g_last = Date.now();
 
 function animate(angle) {
 //==============================================================================
-  // Calculate the elapsed time
-  var now = Date.now();
-  var elapsed = now - g_last;
-  g_last = now;
-  
-  // Update the current rotation angle (adjusted by the elapsed time)
-  var newAngle = angle + (ANGLE_STEP * elapsed) / 1000.0;
-  if(newAngle > 180.0) newAngle = newAngle - 360.0;
-  if(newAngle <-180.0) newAngle = newAngle + 360.0;
-  return newAngle;
+	// Calculate the elapsed time
+	var now = Date.now();
+	var elapsed = now - g_last;
+	g_last = now;
+
+	// Update the current rotation angle (adjusted by the elapsed time)
+	var newAngle = angle + (ANGLE_STEP * elapsed) / 1000.0;
+	if(newAngle > 180.0) newAngle = newAngle - 360.0;
+	if(newAngle <-180.0) newAngle = newAngle + 360.0;
+	return newAngle;
 }
 
 //==================HTML Button Callbacks======================
@@ -538,47 +512,47 @@ function spinUp() {
 // Called when user presses the 'Spin >>' button on our webpage.
 // ?HOW? Look in the HTML file (e.g. ControlMulti.html) to find
 // the HTML 'button' element with onclick='spinUp()'.
-  ANGLE_STEP += 25; 
+	ANGLE_STEP += 25;
 }
 
 function spinDown() {
 // Called when user presses the 'Spin <<' button
- ANGLE_STEP -= 25; 
+	ANGLE_STEP -= 25;
 }
 
 function runStop() {
 // Called when user presses the 'Run/Stop' button
-  if(ANGLE_STEP*ANGLE_STEP > 1) {
-    myTmp = ANGLE_STEP;
-    ANGLE_STEP = 0;
-  }
-  else {
-  	ANGLE_STEP = myTmp;
-  }
+	if(ANGLE_STEP*ANGLE_STEP > 1) {
+		myTmp = ANGLE_STEP;
+		ANGLE_STEP = 0;
+	}
+	else {
+		ANGLE_STEP = myTmp;
+	}
 }
 
 function clearMouse() {
-// Called when user presses 'Clear' button on our webpage, just below the 
+// Called when user presses 'Clear' button on our webpage, just below the
 // 'xMdragTot,yMdragTot' display.
 	xMdragTot = 0.0;
 	yMdragTot = 0.0;
 	document.getElementById('MouseText').innerHTML=
-			'Mouse Drag totals (CVV x,y coords):\t'+
-			 xMdragTot.toFixed(5)+', \t'+
-			 yMdragTot.toFixed(5);	
+		'Mouse Drag totals (CVV x,y coords):\t'+
+		xMdragTot.toFixed(5)+', \t'+
+		yMdragTot.toFixed(5);
 }
 
 function resetQuat() {
-// Called when user presses 'Reset' button on our webpage, just below the 
+// Called when user presses 'Reset' button on our webpage, just below the
 // 'Current Quaternion' display.
-  var res=5;
+	var res=5;
 	qTot.clear();
-	document.getElementById('QuatValue').innerHTML= 
-														 '\t X=' +qTot.x.toFixed(res)+
-														'i\t Y=' +qTot.y.toFixed(res)+
-														'j\t Z=' +qTot.z.toFixed(res)+
-														'k\t W=' +qTot.w.toFixed(res)+
-														'<br>length='+qTot.length().toFixed(res);
+	document.getElementById('QuatValue').innerHTML=
+		'\t X=' +qTot.x.toFixed(res)+
+		'i\t Y=' +qTot.y.toFixed(res)+
+		'j\t Z=' +qTot.z.toFixed(res)+
+		'k\t W=' +qTot.w.toFixed(res)+
+		'<br>length='+qTot.length().toFixed(res);
 }
 //===================Mouse and Keyboard event-handling Callbacks
 
@@ -586,22 +560,22 @@ function myMouseDown(ev, gl, canvas) {
 //==============================================================================
 // Called when user PRESSES down any mouse button;
 // 									(Which button?    console.log('ev.button='+ev.button);   )
-// 		ev.clientX, ev.clientY == mouse pointer location, but measured in webpage 
-//		pixels: left-handed coords; UPPER left origin; Y increases DOWNWARDS (!)  
+// 		ev.clientX, ev.clientY == mouse pointer location, but measured in webpage
+//		pixels: left-handed coords; UPPER left origin; Y increases DOWNWARDS (!)
 
 // Create right-handed 'pixel' coords with origin at WebGL canvas LOWER left;
-  var rect = ev.target.getBoundingClientRect();	// get canvas corners in pixels
-  var xp = ev.clientX - rect.left;									// x==0 at canvas left edge
-  var yp = canvas.height - (ev.clientY - rect.top);	// y==0 at canvas bottom edge
+	var rect = ev.target.getBoundingClientRect();	// get canvas corners in pixels
+	var xp = ev.clientX - rect.left;									// x==0 at canvas left edge
+	var yp = canvas.height - (ev.clientY - rect.top);	// y==0 at canvas bottom edge
 //  console.log('myMouseDown(pixel coords): xp,yp=\t',xp,',\t',yp);
-  
+
 	// Convert to Canonical View Volume (CVV) coordinates too:
-  var x = (xp - canvas.width/2)  / 		// move origin to center of canvas and
-  						 (canvas.width/2);			// normalize canvas to -1 <= x < +1,
+	var x = (xp - canvas.width/2)  / 		// move origin to center of canvas and
+		(canvas.width/2);			// normalize canvas to -1 <= x < +1,
 	var y = (yp - canvas.height/2) /		//										 -1 <= y < +1.
-							 (canvas.height/2);
+		(canvas.height/2);
 //	console.log('myMouseDown(CVV coords  ):  x, y=\t',x,',\t',y);
-	
+
 	isDrag = true;											// set our mouse-dragging flag
 	xMclik = x;													// record where mouse-dragging began
 	yMclik = y;
@@ -611,22 +585,22 @@ function myMouseMove(ev, gl, canvas) {
 //==============================================================================
 // Called when user MOVES the mouse with a button already pressed down.
 // 									(Which button?   console.log('ev.button='+ev.button);    )
-// 		ev.clientX, ev.clientY == mouse pointer location, but measured in webpage 
-//		pixels: left-handed coords; UPPER left origin; Y increases DOWNWARDS (!)  
+// 		ev.clientX, ev.clientY == mouse pointer location, but measured in webpage
+//		pixels: left-handed coords; UPPER left origin; Y increases DOWNWARDS (!)
 
 	if(isDrag==false) return;				// IGNORE all mouse-moves except 'dragging'
 
 	// Create right-handed 'pixel' coords with origin at WebGL canvas LOWER left;
-  var rect = ev.target.getBoundingClientRect();	// get canvas corners in pixels
-  var xp = ev.clientX - rect.left;									// x==0 at canvas left edge
+	var rect = ev.target.getBoundingClientRect();	// get canvas corners in pixels
+	var xp = ev.clientX - rect.left;									// x==0 at canvas left edge
 	var yp = canvas.height - (ev.clientY - rect.top);	// y==0 at canvas bottom edge
 //  console.log('myMouseMove(pixel coords): xp,yp=\t',xp,',\t',yp);
-  
+
 	// Convert to Canonical View Volume (CVV) coordinates too:
-  var x = (xp - canvas.width/2)  / 		// move origin to center of canvas and
-  						 (canvas.width/2);			// normalize canvas to -1 <= x < +1,
+	var x = (xp - canvas.width/2)  / 		// move origin to center of canvas and
+		(canvas.width/2);			// normalize canvas to -1 <= x < +1,
 	var y = (yp - canvas.height/2) /		//										 -1 <= y < +1.
-							 (canvas.height/2);
+		(canvas.height/2);
 
 	// find how far we dragged the mouse:
 	xMdragTot += (x - xMclik);					// Accumulate change-in-mouse-position,&
@@ -637,34 +611,34 @@ function myMouseMove(ev, gl, canvas) {
 	//===================================================
 	xMclik = x;													// Make NEXT drag-measurement from here.
 	yMclik = y;
-	
+
 	// Show it on our webpage, in the <div> element named 'MouseText':
 	document.getElementById('MouseText').innerHTML=
-			'Mouse Drag totals (CVV x,y coords):\t'+
-			 xMdragTot.toFixed(5)+', \t'+
-			 yMdragTot.toFixed(5);	
+		'Mouse Drag totals (CVV x,y coords):\t'+
+		xMdragTot.toFixed(5)+', \t'+
+		yMdragTot.toFixed(5);
 };
 
 function myMouseUp(ev, gl, canvas) {
 //==============================================================================
 // Called when user RELEASES mouse button pressed previously.
 // 									(Which button?   console.log('ev.button='+ev.button);    )
-// 		ev.clientX, ev.clientY == mouse pointer location, but measured in webpage 
-//		pixels: left-handed coords; UPPER left origin; Y increases DOWNWARDS (!)  
+// 		ev.clientX, ev.clientY == mouse pointer location, but measured in webpage
+//		pixels: left-handed coords; UPPER left origin; Y increases DOWNWARDS (!)
 
 // Create right-handed 'pixel' coords with origin at WebGL canvas LOWER left;
-  var rect = ev.target.getBoundingClientRect();	// get canvas corners in pixels
-  var xp = ev.clientX - rect.left;									// x==0 at canvas left edge
+	var rect = ev.target.getBoundingClientRect();	// get canvas corners in pixels
+	var xp = ev.clientX - rect.left;									// x==0 at canvas left edge
 	var yp = canvas.height - (ev.clientY - rect.top);	// y==0 at canvas bottom edge
 //  console.log('myMouseUp  (pixel coords): xp,yp=\t',xp,',\t',yp);
-  
+
 	// Convert to Canonical View Volume (CVV) coordinates too:
-  var x = (xp - canvas.width/2)  / 		// move origin to center of canvas and
-  						 (canvas.width/2);			// normalize canvas to -1 <= x < +1,
+	var x = (xp - canvas.width/2)  / 		// move origin to center of canvas and
+		(canvas.width/2);			// normalize canvas to -1 <= x < +1,
 	var y = (yp - canvas.height/2) /		//										 -1 <= y < +1.
-							 (canvas.height/2);
+		(canvas.height/2);
 //	console.log('myMouseUp  (CVV coords  ):  x, y=\t',x,',\t',y);
-	
+
 	isDrag = false;											// CLEAR our mouse-dragging flag, and
 	// accumulate any final bit of mouse-dragging we did:
 	xMdragTot += (x - xMclik);
@@ -676,41 +650,41 @@ function myMouseUp(ev, gl, canvas) {
 
 	// Show it on our webpage, in the <div> element named 'MouseText':
 	document.getElementById('MouseText').innerHTML=
-			'Mouse Drag totals (CVV x,y coords):\t'+
-			 xMdragTot.toFixed(5)+', \t'+
-			 yMdragTot.toFixed(5);	
+		'Mouse Drag totals (CVV x,y coords):\t'+
+		xMdragTot.toFixed(5)+', \t'+
+		yMdragTot.toFixed(5);
 };
 
 function dragQuat(xdrag, ydrag) {
 //==============================================================================
 // Called when user drags mouse by 'xdrag,ydrag' as measured in CVV coords.
-// We find a rotation axis perpendicular to the drag direction, and convert the 
-// drag distance to an angular rotation amount, and use both to set the value of 
-// the quaternion qNew.  We then combine this new rotation with the current 
-// rotation stored in quaternion 'qTot' by quaternion multiply.  Note the 
-// 'draw()' function converts this current 'qTot' quaternion to a rotation 
-// matrix for drawing. 
+// We find a rotation axis perpendicular to the drag direction, and convert the
+// drag distance to an angular rotation amount, and use both to set the value of
+// the quaternion qNew.  We then combine this new rotation with the current
+// rotation stored in quaternion 'qTot' by quaternion multiply.  Note the
+// 'draw()' function converts this current 'qTot' quaternion to a rotation
+// matrix for drawing.
 	var res = 5;
 	var qTmp = new Quaternion(0,0,0,1);
-	
+
 	var dist = Math.sqrt(xdrag*xdrag + ydrag*ydrag);
 	// console.log('xdrag,ydrag=',xdrag.toFixed(5),ydrag.toFixed(5),'dist=',dist.toFixed(5));
 	qNew.setFromAxisAngle(-ydrag + 0.0001, xdrag + 0.0001, 0.0, dist*150.0);
 	// (why add tiny 0.0001? To ensure we never have a zero-length rotation axis)
-							// why axis (x,y,z) = (-yMdrag,+xMdrag,0)? 
-							// -- to rotate around +x axis, drag mouse in -y direction.
-							// -- to rotate around +y axis, drag mouse in +x direction.
-							
-	qTmp.multiply(qNew,qTot);			// apply new rotation to current rotation. 
+	// why axis (x,y,z) = (-yMdrag,+xMdrag,0)?
+	// -- to rotate around +x axis, drag mouse in -y direction.
+	// -- to rotate around +y axis, drag mouse in +x direction.
+
+	qTmp.multiply(qNew,qTot);			// apply new rotation to current rotation.
 	//--------------------------
 	// IMPORTANT! Why qNew*qTot instead of qTot*qNew? (Try it!)
-	// ANSWER: Because 'duality' governs ALL transformations, not just matrices. 
+	// ANSWER: Because 'duality' governs ALL transformations, not just matrices.
 	// If we multiplied in (qTot*qNew) order, we would rotate the drawing axes
 	// first by qTot, and then by qNew--we would apply mouse-dragging rotations
 	// to already-rotated drawing axes.  Instead, we wish to apply the mouse-drag
 	// rotations FIRST, before we apply rotations from all the previous dragging.
 	//------------------------
-	// IMPORTANT!  Both qTot and qNew are unit-length quaternions, but we store 
+	// IMPORTANT!  Both qTot and qNew are unit-length quaternions, but we store
 	// them with finite precision. While the product of two (EXACTLY) unit-length
 	// quaternions will always be another unit-length quaternion, the qTmp length
 	// may drift away from 1.0 if we repeat this quaternion multiply many times.
@@ -719,78 +693,78 @@ function dragQuat(xdrag, ydrag) {
 //	qTmp.normalize();						// normalize to ensure we stay at length==1.0.
 	qTot.copy(qTmp);
 	// show the new quaternion qTot on our webpage in the <div> element 'QuatValue'
-	document.getElementById('QuatValue').innerHTML= 
-														 '\t X=' +qTot.x.toFixed(res)+
-														'i\t Y=' +qTot.y.toFixed(res)+
-														'j\t Z=' +qTot.z.toFixed(res)+
-														'k\t W=' +qTot.w.toFixed(res)+
-														'<br>length='+qTot.length().toFixed(res);
+	document.getElementById('QuatValue').innerHTML=
+		'\t X=' +qTot.x.toFixed(res)+
+		'i\t Y=' +qTot.y.toFixed(res)+
+		'j\t Z=' +qTot.z.toFixed(res)+
+		'k\t W=' +qTot.w.toFixed(res)+
+		'<br>length='+qTot.length().toFixed(res);
 };
 
 function testQuaternions() {
 //==============================================================================
-// Test our little "quaternion-mod.js" library with simple rotations for which 
-// we know the answers; print results to make sure all functions work as 
+// Test our little "quaternion-mod.js" library with simple rotations for which
+// we know the answers; print results to make sure all functions work as
 // intended.
 // 1)  Test constructors and value-setting functions:
 
 	var res = 5;
-	var myQuat = new Quaternion(1,2,3,4);		
-		console.log('constructor: myQuat(x,y,z,w)=', 
+	var myQuat = new Quaternion(1,2,3,4);
+	console.log('constructor: myQuat(x,y,z,w)=',
 		myQuat.x, myQuat.y, myQuat.z, myQuat.w);
 	myQuat.clear();
-		console.log('myQuat.clear()=', 
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), 
+	console.log('myQuat.clear()=',
+		myQuat.x.toFixed(res), myQuat.y.toFixed(res),
 		myQuat.z.toFixed(res), myQuat.w.toFixed(res));
 	myQuat.set(1,2, 3,4);
-		console.log('myQuat.set(1,2,3,4)=', 
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), 
+	console.log('myQuat.set(1,2,3,4)=',
+		myQuat.x.toFixed(res), myQuat.y.toFixed(res),
 		myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-		console.log('myQuat.length()=', myQuat.length().toFixed(res));
+	console.log('myQuat.length()=', myQuat.length().toFixed(res));
 	myQuat.normalize();
-		console.log('myQuat.normalize()=', 
+	console.log('myQuat.normalize()=',
 		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-		// Simplest possible quaternions:
+	// Simplest possible quaternions:
 	myQuat.setFromAxisAngle(1,0,0,0);
-		console.log('Set myQuat to 0-deg. rot. on x axis=',
+	console.log('Set myQuat to 0-deg. rot. on x axis=',
 		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
 	myQuat.setFromAxisAngle(0,1,0,0);
-		console.log('set myQuat to 0-deg. rot. on y axis=',
+	console.log('set myQuat to 0-deg. rot. on y axis=',
 		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
 	myQuat.setFromAxisAngle(0,0,1,0);
-		console.log('set myQuat to 0-deg. rot. on z axis=',
+	console.log('set myQuat to 0-deg. rot. on z axis=',
 		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res), '\n');
-		
+
 	myQmat = new Matrix4();
-	myQuat.setFromAxisAngle(1,0,0, 90.0);	
-		console.log('set myQuat to +90-deg rot. on x axis =',
+	myQuat.setFromAxisAngle(1,0,0, 90.0);
+	console.log('set myQuat to +90-deg rot. on x axis =',
 		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
 	myQmat.setFromQuat(myQuat.x, myQuat.y, myQuat.z, myQuat.w);
-		console.log('myQuat as matrix: (+y axis <== -z axis)(+z axis <== +y axis)');
-		myQmat.printMe();
-	
-	myQuat.setFromAxisAngle(0,1,0, 90.0);	
-		console.log('set myQuat to +90-deg rot. on y axis =',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-	myQmat.setFromQuat(myQuat.x, myQuat.y, myQuat.z, myQuat.w);
-		console.log('myQuat as matrix: (+x axis <== +z axis)(+z axis <== -x axis)');
-		myQmat.printMe();
+	console.log('myQuat as matrix: (+y axis <== -z axis)(+z axis <== +y axis)');
+	myQmat.printMe();
 
-	myQuat.setFromAxisAngle(0,0,1, 90.0);	
-		console.log('set myQuat to +90-deg rot. on z axis =',
+	myQuat.setFromAxisAngle(0,1,0, 90.0);
+	console.log('set myQuat to +90-deg rot. on y axis =',
 		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
 	myQmat.setFromQuat(myQuat.x, myQuat.y, myQuat.z, myQuat.w);
-		console.log('myQuat as matrix: (+x axis <== -y axis)(+y axis <== +x axis)');
-		myQmat.printMe();
+	console.log('myQuat as matrix: (+x axis <== +z axis)(+z axis <== -x axis)');
+	myQmat.printMe();
 
-	// Test quaternion multiply: 
+	myQuat.setFromAxisAngle(0,0,1, 90.0);
+	console.log('set myQuat to +90-deg rot. on z axis =',
+		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
+	myQmat.setFromQuat(myQuat.x, myQuat.y, myQuat.z, myQuat.w);
+	console.log('myQuat as matrix: (+x axis <== -y axis)(+y axis <== +x axis)');
+	myQmat.printMe();
+
+	// Test quaternion multiply:
 	// (q1*q2) should rotate drawing axes by q1 and then by q2;  it does!
 	var qx90 = new Quaternion;
 	var qy90 = new Quaternion;
 	qx90.setFromAxisAngle(1,0,0,90.0);			// +90 deg on x axis
 	qy90.setFromAxisAngle(0,1,0,90.0);			// +90 deg on y axis.
 	myQuat.multiply(qx90,qy90);
-		console.log('set myQuat to (90deg x axis) * (90deg y axis) = ',
+	console.log('set myQuat to (90deg x axis) * (90deg y axis) = ',
 		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
 	myQmat.setFromQuat(myQuat.x, myQuat.y, myQuat.z, myQuat.w);
 	console.log('myQuat as matrix: (+x <== +z)(+y <== +x )(+z <== +y');
