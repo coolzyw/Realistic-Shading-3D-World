@@ -6,7 +6,7 @@
   </head>
 	<!--	Create the HTML5 'canvas' element in which we will run WebGL
 	-->
-  <body onload="main()">
+  <body onload="main()" onresize="drawResize()">
     <canvas id="webgl" width="500" height="500">
     Please use a browser that supports "canvas"
     </canvas>
@@ -35,6 +35,16 @@
 			(Matsuda et al., 2013 WebGL Programming Guide) that help us
 			with WebGL programming:
 	-->
+    <hr> <!-- Draw a horizontal-line separator------------->
+    <br>
+    <span id='KeyDownResult'  > KeyDown:    </span> <!-- myKeyDown() modifies this span object -->
+    <br>
+    <span id='KeyModResult'   > KeyMod :<br><br>   </span> <!-- myKeyDown() modifies this span object -->
+    <br>
+    <span id='MouseAtResult' style="color: darkmagenta" >   Mouse At: </span> <!-- myMouseMove() modifies this span object -->
+    <br>
+    <span id='MouseDragResult' style="color: darkmagenta"> Mouse Drag: </span> <!-- myMouseUp() modifies this span object -->
+
     <script src="../lib/webgl-utils.js"></script>
     <script src="../lib/webgl-debug.js"></script>
     <script src="../lib/cuon-utils.js"></script>

@@ -78,19 +78,18 @@ var qTot = new Quaternion(0,0,0,1);	// 'current' orientation (made from qNew)
 var quatMatrix = new Matrix4();				// rotation matrix, made from latest qTot
 var floatsPerVertex = 10;
 
-var currentAngle = 0.0;
-
 // --------------------- Global Variables----------------------------------
 var canvas;		// main() sets this to the HTML-5 'canvas' element used for WebGL.
 var gl;				// main() sets this to the rendering context for WebGL. This object
 var g_canvas = document.getElementById('webgl');
 
 // --------------------- Eye positions -----------------------------------
-var g_EyeX = -0.5, g_EyeY = 8.6, g_EyeZ = 1; // Eye position
+var g_EyeX = -3, g_EyeY = 4, g_EyeZ = -1; // Eye position
 var forward = 0.5;
 var sideway = 0.3;
 var theta = -3.14;
 var turn_height = 0;
+var currentAngle = 0;
 
 function main() {
 //==============================================================================
@@ -105,6 +104,8 @@ function main() {
   }
 
   gl = myGL;	// make it global--for every function to use.
+
+	window.addEventListener("keydown", myKeyDown, false);
 
   // Initialize shaders
   if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
@@ -838,3 +839,119 @@ function testQuaternions() {
 	myQmat.printMe();
 }
 
+
+function myKeyDown(kev) {
+//===============================================================================
+// Called when user presses down ANY key on the keyboard;
+//
+// For a light, easy explanation of keyboard events in JavaScript,
+// see:    http://www.kirupa.com/html5/keyboard_events_in_javascript.htm
+// For a thorough explanation of a mess of JavaScript keyboard event handling,
+// see:    http://javascript.info/tutorial/keyboard-events
+//
+// NOTE: Mozilla deprecated the 'keypress' event entirely, and in the
+//        'keydown' event deprecated several read-only properties I used
+//        previously, including kev.charCode, kev.keyCode.
+//        Revised 2/2019:  use kev.key and kev.code instead.
+//
+// Report EVERYTHING in console:
+	console.log(  "--kev.code:",    kev.code,   "\t\t--kev.key:",     kev.key,
+		"\n--kev.ctrlKey:", kev.ctrlKey,  "\t--kev.shiftKey:",kev.shiftKey,
+		"\n--kev.altKey:",  kev.altKey,   "\t--kev.metaKey:", kev.metaKey);
+
+// and report EVERYTHING on webpage:
+	document.getElementById('KeyDownResult').innerHTML = ''; // clear old results
+	document.getElementById('KeyModResult' ).innerHTML = '';
+	// key details:
+	document.getElementById('KeyModResult' ).innerHTML =
+		"   --kev.code:"+kev.code   +"      --kev.key:"+kev.key+
+		"<br>--kev.ctrlKey:"+kev.ctrlKey+" --kev.shiftKey:"+kev.shiftKey+
+		"<br>--kev.altKey:"+kev.altKey +"  --kev.metaKey:"+kev.metaKey;
+
+	switch(kev.code) {
+		case "KeyP":
+			console.log("Pause/unPause!\n");                // print on console,
+			document.getElementById('KeyDownResult').innerHTML =
+				'myKeyDown() found p/P key. Pause/unPause!';   // print on webpage
+			if(g_isRun==true) {
+				g_isRun = false;    // STOP animation
+				runStop();
+				document.getElementById("stop/start").innerText = "both object stop spinning!"
+			}
+			else {
+				g_isRun = true;     // RESTART animation
+				runStop();
+				document.getElementById("stop/start").innerText = "both object start spinning!"
+				// tick();
+			}
+			break;
+		//------------------WASD navigation-----------------
+		case "KeyD":
+			theta += 0.03;
+			break;
+		case "KeyA":
+			theta -= 0.03;
+			break;
+		case "KeyS":
+			console.log("d/D key: Strafe RIGHT!\n");
+			document.getElementById('KeyDownResult').innerHTML =
+				'myKeyDown() found d/D key. Strafe RIGHT!';
+			turn_height -= 0.03;
+			break;
+		case "KeyW":
+			console.log("d/D key: Strafe RIGHT!\n");
+			document.getElementById('KeyDownResult').innerHTML =
+				'myKeyDown() found d/D key. Strafe RIGHT!';
+			turn_height += 0.03;
+			break;
+		case "KeyH":
+			g_EyeZ += 0.1;
+			break;
+		case "KeyG":
+			g_EyeZ -= 0.1;
+			break;
+		// case "KeyJ":
+		// 	g_angleRate04 -= 5;
+		// 	break;
+		// case "KeyK":
+		// 	g_angleRate04 += 5;
+		// 	break;
+		//----------------Arrow keys------------------------
+		case "ArrowLeft":
+			console.log(' left-arrow.');
+			// and print on webpage in the <div> element with id='Result':
+			document.getElementById('KeyDownResult').innerHTML =
+				'myKeyDown(): Left Arrow='+kev.keyCode;
+			g_EyeX -= Math.cos(theta) * sideway;
+			g_EyeY -= -Math.sin(theta) * sideway;
+			break;
+		case "ArrowRight":
+			console.log('right-arrow.');
+			document.getElementById('KeyDownResult').innerHTML =
+				'myKeyDown():Right Arrow:keyCode='+kev.keyCode;
+			g_EyeX -= -Math.cos(theta) * sideway;
+			g_EyeY -= Math.sin(theta) * sideway;
+			break;
+		case "ArrowUp":
+			console.log('   up-arrow.');
+			document.getElementById('KeyDownResult').innerHTML =
+				'myKeyDown():   Up Arrow:keyCode='+kev.keyCode;
+			g_EyeX += Math.sin(theta) * forward;
+			g_EyeY += Math.cos(theta) * forward;
+			g_EyeZ += turn_height * forward;
+			break;
+		case "ArrowDown":
+			console.log(' down-arrow.');
+			document.getElementById('KeyDownResult').innerHTML =
+				'myKeyDown(): Down Arrow:keyCode='+kev.keyCode;
+			g_EyeX -= Math.sin(theta) * forward;
+			g_EyeY -= Math.cos(theta) * forward;
+			g_EyeZ -= turn_height * forward;
+			break;
+		default:
+			console.log("UNUSED!");
+			document.getElementById('KeyDownResult').innerHTML =
+				'myKeyDown(): UNUSED!';
+			break;
+	}
+}
