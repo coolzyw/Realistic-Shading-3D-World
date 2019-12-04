@@ -403,7 +403,6 @@ function drawTwoView(gl, n) {
 	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
 		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
 		0.0, 0.0, 1.0);     // 'up' vector
-	mvpMatrix.multiply(modelMatrix);
 	drawAll(gl, n);   // Draw shapes
 }
 
@@ -423,10 +422,29 @@ function drawAll(gl, n) {
 	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
 
 	drawGroundGrid(gl, n);
-	drawPyramid(gl, n);
 	drawCube(gl, n);
+	drawPyramid(gl, n);
 
 
+}
+
+function drawGroundGrid(gl, n) {
+	// draw ground grid
+	pushMatrix(modelMatrix);
+	pushMatrix(modelMatrix);
+	pushMatrix(modelMatrix);
+
+	modelMatrix.translate(1,0,0);
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
+	mvpMatrix.multiply(modelMatrix);
+
+	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+	gl.drawArrays(gl.LINES,             // use this drawing primitive, and
+		gndStart / floatsPerVertex, // start at this vertex number, and
+		gndVerts.length / floatsPerVertex);   // draw this many vertices
 }
 
 
@@ -434,7 +452,7 @@ function drawPyramid(gl, n) {
 	//-------Create Spinning Tetrahedron-----------------------------------------
 	// (Projection and View matrices, if you had them, would go here)
 	modelMatrix = popMatrix();
-	modelMatrix.translate(-0.4,-0.4, 0.0);  // 'set' means DISCARD old matrix,
+	modelMatrix.translate(-0.4,-5, 0);  // 'set' means DISCARD old matrix,
 	// (drawing axes centered in CVV), and then make new
 	// drawing axes moved to the lower-left corner of CVV.
 	modelMatrix.scale(1,1,-1);							// convert to left-handed coord sys
@@ -446,6 +464,7 @@ function drawPyramid(gl, n) {
 	// Calculate the matrix to transform the normal based on the model matrix
 	normalMatrix.setInverseOf(modelMatrix);
 	normalMatrix.transpose();
+	mvpMatrix.multiply(modelMatrix);
 
 	//-----SEND to GPU & Draw
 	//the first set of vertices stored in our VBO:
@@ -459,35 +478,18 @@ function drawPyramid(gl, n) {
 }
 
 function drawCube(gl, n) {
-	modelMatrix = popMatrix();
-	modelMatrix.translate(2,0,0);
+	modelMatrix.translate(2, 0,0);
 	modelMatrix.scale(0.5,0.5,0.5);
-	// normalMatrix.setInverseOf(modelMatrix);
-	// normalMatrix.transpose();
+	mvpMatrix.multiply(modelMatrix);
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
 	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
 	// Pass our current Normal matrix to the vertex shaders:
-	// gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
 	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
 	gl.drawArrays(gl.TRIANGLES,             // use this drawing primitive, and
 		cubeStart / floatsPerVertex, // start at this vertex number, and
 		cubeVerts.length / floatsPerVertex);   // draw this many vertices
-}
-
-function drawGroundGrid(gl, n) {
-	// draw ground grid
-	pushMatrix(modelMatrix);
-	pushMatrix(modelMatrix);
-	pushMatrix(modelMatrix);
-
-	modelMatrix.translate(1,0,0);
-	// normalMatrix.setInverseOf(modelMatrix);
-	// normalMatrix.transpose();
-
-	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
-	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
-	gl.drawArrays(gl.LINES,             // use this drawing primitive, and
-		gndStart / floatsPerVertex, // start at this vertex number, and
-		gndVerts.length / floatsPerVertex);   // draw this many vertices
 }
 
 // Record the last time we called 'animate()':  (used for animation timing)
