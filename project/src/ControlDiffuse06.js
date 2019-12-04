@@ -78,17 +78,33 @@ var qTot = new Quaternion(0,0,0,1);	// 'current' orientation (made from qNew)
 var quatMatrix = new Matrix4();				// rotation matrix, made from latest qTot
 var floatsPerVertex = 10;
 
+var currentAngle = 0.0;
+
+// --------------------- Global Variables----------------------------------
+var canvas;		// main() sets this to the HTML-5 'canvas' element used for WebGL.
+var gl;				// main() sets this to the rendering context for WebGL. This object
+var g_canvas = document.getElementById('webgl');
+
+// --------------------- Eye positions -----------------------------------
+var g_EyeX = -0.5, g_EyeY = 8.6, g_EyeZ = 1; // Eye position
+var forward = 0.5;
+var sideway = 0.3;
+var theta = -3.14;
+var turn_height = 0;
+
 function main() {
 //==============================================================================
   // Retrieve <canvas> element
-  var canvas = document.getElementById('webgl');
+  canvas = document.getElementById('webgl');
 
   // Get the rendering context for WebGL
-  var gl = getWebGLContext(canvas);
-  if (!gl) {
+  var myGL = getWebGLContext(g_canvas);
+  if (!myGL) {
     console.log('Failed to get the rendering context for WebGL');
     return;
   }
+
+  gl = myGL;	// make it global--for every function to use.
 
   // Initialize shaders
   if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
@@ -151,9 +167,15 @@ function main() {
 	// in VBO by 'model' matrix to convert to 'world' coordinates, and 
 	// transform surface normal vectors by 'normal' matrix to convert to 'world').
 	//------------------------------------------------------------------
-	
+
+	// NEW! -- make new canvas to fit the browser-window size;
+	drawResize(gl, n, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);   // On this first call, Chrome browser seems to use the
+	// initial fixed canvas size we set in the HTML file;
+	// But by default Chrome opens its browser at the same
+	// size & location where you last closed it, so
+	drawResize(gl, n, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);   // Call drawResize() a SECOND time to re-size canvas to
+	// match the current browser size.
   // Create, init current rotation angle value in JavaScript
-  var currentAngle = 0.0;
   
 //====================================
 	testQuaternions();		// test fcn at end of file
@@ -163,7 +185,7 @@ function main() {
   //----------------- 
   var tick = function() {
     currentAngle = animate(currentAngle);  // Update the rotation angle
-    draw(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);   // Draw shapes
+	  drawResize(gl, n, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);
 //    console.log('currentAngle=',currentAngle); // put text in console.
     requestAnimationFrame(tick, canvas);   
     									// Request that the browser re-draw the webpage
@@ -171,6 +193,65 @@ function main() {
   };
   tick();							// start (and continue) animation: draw current image
 	
+}
+
+function drawResize(gl, n, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
+//==============================================================================
+// Called when user re-sizes their browser window , because our HTML file
+// contains:  <body onload="main()" onresize="winResize()">
+
+	var nuCanvas = document.getElementById('webgl');	// get current canvas
+	var nuGL = getWebGLContext(nuCanvas);							// and context:
+
+	//Report our current browser-window contents:
+
+	// console.log('nuCanvas width,height=', nuCanvas.width, nuCanvas.height);
+	// console.log('Browser window: innerWidth,innerHeight=',
+	// 	innerWidth, innerHeight);	// http://www.w3schools.com/jsref/obj_window.asp
+
+
+	//Make canvas fill the top 3/4 of our browser window:
+	nuCanvas.width = innerWidth;
+	nuCanvas.height = innerHeight*4/5;
+
+
+	// IMPORTANT!  Need a fresh drawing in the re-sized viewports.
+	drawTwoView(gl, n, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);
+}
+
+function drawTwoView(gl, n, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
+	// Specify the color for clearing <canvas>
+
+	// NEW!! Enable 3D depth-test when drawing: don't over-draw at any pixel
+	// unless the new Z value is closer to the eye than the old one..
+//	gl.depthFunc(gl.LESS);			 // WebGL default setting: (default)
+	gl.enable(gl.DEPTH_TEST);
+
+	// Get handle to graphics system's storage location of u_ModelMatrix
+	// var viewMatrix = new Matrix4();
+
+	// store the view matrix and projection matrix
+	// var u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+
+	// Create, init current rotation angle value in JavaScript
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+	var ratio = (innerWidth / 2) / innerHeight;
+	gl.viewport(0, 0, g_canvas.width / 2, g_canvas.height);
+	modelMatrix.setIdentity();    // DEFINE 'world-space' coords.
+	modelMatrix.perspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
+		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
+		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
+		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
+	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
+	modelMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
+		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
+		0.0, 0.0, 1.0);     // 'up' vector
+	drawAll(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);   // Draw shapes
+}
+
+function drawAll(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
+	drawGroundGrid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);
 }
 
 
@@ -267,7 +348,7 @@ function makeGroundGrid() {
 
 	var xcount = 200;			// # of lines to draw in x,y to make the grid.
 	var ycount = 200;
-	var xymax	= 50;			// grid size; extends to cover +/-xymax in x and y.
+	var xymax	= 20;			// grid size; extends to cover +/-xymax in x and y.
 	var xColr = new Float32Array([1.0, 1.0, 0.3]);	// bright yellow
 	var yColr = new Float32Array([0.5, 1.0, 0.5]);	// bright green.
 	var n_x = Math.random() * 0.5;
@@ -431,7 +512,8 @@ function initVertexBuffer(gl) {
   return nn;
 }
 
-function draw(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
+
+function drawGroundGrid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
 //==============================================================================
   // Clear <canvas>  colors AND the depth buffer
   	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
