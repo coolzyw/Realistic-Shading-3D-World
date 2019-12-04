@@ -84,7 +84,7 @@ var gl;				// main() sets this to the rendering context for WebGL. This object
 var g_canvas = document.getElementById('webgl');
 
 // --------------------- Eye positions -----------------------------------
-var g_EyeX = 3, g_EyeY = -4, g_EyeZ = 1; // Eye position
+var g_EyeX = -0.5, g_EyeY = 8.6, g_EyeZ = 1; // Eye position
 var forward = 0.5;
 var sideway = 0.3;
 var theta = -3.14;
@@ -237,8 +237,8 @@ function drawTwoView(gl, n, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMa
 	// Create, init current rotation angle value in JavaScript
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	var ratio = (innerWidth / 2) / innerHeight;
-	gl.viewport(0, 0, g_canvas.width / 2, g_canvas.height);
+	var ratio = (innerWidth) / innerHeight;
+	gl.viewport(0, 0, g_canvas.width, g_canvas.height);
 	modelMatrix.setIdentity();    // DEFINE 'world-space' coords.
 	modelMatrix.perspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
 		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
