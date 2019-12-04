@@ -253,6 +253,7 @@ function drawTwoView(gl, n, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMa
 
 function drawAll(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
 	drawGroundGrid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);
+	drawCube(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix);
 }
 
 
@@ -407,12 +408,95 @@ function makeGroundGrid() {
 	}
 }
 
+function makeCube() {
+
+	var height = 1;
+	var width = 1;
+	var length = 1;
+
+	cubeVerts = new Float32Array([
+		// Vertex coordinates(x,y,z,w) and color (R,G,B) for a color tetrahedron:
+		//		Apex on +z axis; equilateral triangle base at z=0
+
+		// Node 0 0.3, 0.6, 0.7,
+		// Node 1 0.8, 0.4, 1,
+		// Node 2 0.8, 0.5, 0.4,
+		// Node 3 0.7, 0.9, 0.1,
+		// Node 4 0.9, 0, 0.3,
+		// Node 5 0.3, 0.3, 1,
+		// Node 6 1, 0.9, 0.2,
+		// Node 7 0.9, 1, 0.9,
+		// Node 8 0.8, 0.8, 0.7,
+
+
+
+
+		// +x face: RED
+		1.0 * length, -1.0 * width, -1.0 * height, 1.0,		0.7, 0.9, 0.1,	0,0,1,// Node 3
+		1.0 * length,  1.0 * width, -1.0 * height, 1.0,		0, 1, 0,	0,0,1,// Node 2
+		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,  0,0,1,// Node 4
+
+		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,	0,0,1,// Node 4
+		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  0.9, 1, 0.9,	0,0,1,// Node 7
+		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1, 0,0,1,	// Node 3
+
+		// +y face: GREEN
+		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1, 1,0,0,	// Node 1
+		-1.0 * length,  1.0 * width, 1.0 * height, 1.0,	  0.3, 0.3, 1,	1,0,0,// Node 5
+		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.9, 0, 0.3,	1,0,0,// Node 4
+
+		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,	1,0,0,// Node 4
+		1.0 * length,  1.0 * width, -1.0 * height, 1.0,	  0, 1, 0,	 1,0,0,// Node 2
+		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1, 1,0,0,	// Node 1
+
+		// +z face: BLUE
+		-1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.3, 0.3, 1, 0,1,0, // Node 5
+		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	0,1,0, // Node 6
+		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	 	0.9, 1, 0.9,	0,1,0, // Node 7
+
+		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  0.9, 1, 0.9,	0,1,0, // Node 7
+		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,	0,1,0, // Node 4
+		-1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.3, 0.3, 1,	0,1,0, // Node 5
+
+		// -x face: CYAN
+		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	0,0,-1,// Node 6
+		-1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.3, 0.3, 1,	0,0,-1,// Node 5
+		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1,	0,0,-1,// Node 1
+
+		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1,	0,0,-1,// Node 1
+		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	 0.3, 0.6, 0.7,	0,0,-1,// Node 0
+		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	0,0,-1,// Node 6
+
+		// -y face: MAGENTA
+		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1,	-1, 0, 0,// Node 3
+		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  0.9, 1, 0.9,	-1, 0, 0,// Node 7
+		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	-1, 0, 0,// Node 6
+
+		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	 1, 0.9, 0.2,	-1, 0, 0,// Node 6
+		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.3, 0.6, 0.7,	-1, 0, 0,// Node 0
+		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1,	-1, 0, 0,// Node 3
+
+		// -z face: YELLOW
+		1.0 * length,  1.0 * width, -1.0 * height, 1.0,	 0, 1, 0,   0, -1, 0,// Node 2
+		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1,	0, -1, 0,// Node 3
+		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	 0.3, 0.6, 0.7,	0, -1, 0,// Node 0
+
+		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.3, 0.6, 0.7,	0, -1, 0,// Node 0
+		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1,	0, -1, 0,// Node 1
+		1.0 * length,  1.0 * width, -1.0 * height, 1.0,	  0, 1, 0,	0, -1, 0,// Node 2
+
+	]);
+
+}
+
+
 function initVertexBuffer(gl) {
 //==============================================================================
 	makePyramid();
 	makeGroundGrid();
+	makeCube();
 
-	var mySiz = (pyramidShapes.length + gndVerts.length);
+	var mySiz = (pyramidShapes.length + gndVerts.length + cubeVerts.length);
 	var nn = mySiz / floatsPerVertex;
 
   	var colorShapes = new Float32Array(mySiz);
@@ -427,6 +511,11 @@ function initVertexBuffer(gl) {
 	gndStart = i;
 	for(j=0; j< gndVerts.length; i++, j++) {// don't initialize i -- reuse it!
 		colorShapes[i] = gndVerts[j];
+	}
+
+	cubeStart = i;
+	for(j=0; j< cubeVerts.length; i++, j++) {// don't initialize i -- reuse it!
+		colorShapes[i] = cubeVerts[j];
 	}
 
 	
@@ -525,6 +614,7 @@ function drawGroundGrid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalM
 	modelMatrix.translate(-0.4,-0.4, 0.0);  // 'set' means DISCARD old matrix,
 	pushMatrix(modelMatrix);
 	pushMatrix(modelMatrix);
+	pushMatrix(modelMatrix);
 	// (drawing axes centered in CVV), and then make new
 	// drawing axes moved to the lower-left corner of CVV.
 	modelMatrix.scale(1,1,-1);							// convert to left-handed coord sys
@@ -547,16 +637,32 @@ function drawGroundGrid(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalM
 	gl.uniformMatrix4fv(u_NormalMatrix, false, modelMatrix.elements);
 	// Draw triangles: start at vertex 0 and draw 12 vertices
 	gl.drawArrays(gl.TRIANGLES, 0, 12);
+}
 
+function drawCube(gl, n, currentAngle, modelMatrix, u_ModelMatrix, normalMatrix, u_NormalMatrix) {
+	modelMatrix = popMatrix();
+	modelMatrix.translate(2,0,0);
+	modelMatrix.scale(0.5,0.5,0.5);
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
+	gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+	gl.uniformMatrix4fv(u_NormalMatrix, false, modelMatrix.elements);
+	gl.drawArrays(gl.TRIANGLES,             // use this drawing primitive, and
+		cubeStart / floatsPerVertex, // start at this vertex number, and
+		cubeVerts.length / floatsPerVertex);   // draw this many vertices
+
+	// draw ground grid
 	modelMatrix = popMatrix();
 	modelMatrix.translate(1,0,0);
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
 	gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
 	gl.uniformMatrix4fv(u_NormalMatrix, false, modelMatrix.elements);
 	gl.drawArrays(gl.LINES,             // use this drawing primitive, and
 		gndStart / floatsPerVertex, // start at this vertex number, and
 		gndVerts.length / floatsPerVertex);   // draw this many vertices
-
 }
+
 
 // Record the last time we called 'animate()':  (used for animation timing)
 var g_last = Date.now();
