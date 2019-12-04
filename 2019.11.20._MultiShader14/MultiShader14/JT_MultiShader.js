@@ -242,12 +242,12 @@ var b4Wait = b4Draw - g_lastMS;
 
 	if(g_show0 == 1) {	// IF user didn't press HTML button to 'hide' VBO0:
 	  worldBox.switchToMe();  // Set WebGL to render from this VBObox.
-     // worldBox.adjust();		  // Send new values for uniforms to the GPU, and
+     worldBox.adjust();		  // Send new values for uniforms to the GPU, and
       worldBox.draw();			  // draw our VBO's contents using our shaders.
   }
   if(g_show1 == 1) { // IF user didn't press HTML button to 'hide' VBO1:
     part1Box.switchToMe();  // Set WebGL to render from this VBObox.
-  	// part1Box.adjust();		  // Send new values for uniforms to the GPU, and
+  	part1Box.adjust();		  // Send new values for uniforms to the GPU, and
   	part1Box.draw();			  // draw our VBO's contents using our shaders.
 	  }
 	if(g_show2 == 1) { // IF user didn't press HTML button to 'hide' VBO2:

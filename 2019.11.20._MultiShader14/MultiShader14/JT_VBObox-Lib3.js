@@ -156,13 +156,33 @@ function VBObox1() {
     // 	 0.0,  0.3, 0.0, 1.0,   0.5, 0.5, 0.5,		// (gray)
     // 	 ]);
 
+    // var vertices = new Float32Array([
+    //     1.0, 1.0, 1.0,  -1.0, 1.0, 1.0,  -1.0,-1.0, 1.0,   1.0,-1.0, 1.0,  1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,  0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,// v0-v1-v2-v3 front
+    //     1.0, 1.0, 1.0,   1.0,-1.0, 1.0,   1.0,-1.0,-1.0,   1.0, 1.0,-1.0,  1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,  1.0, 0.0, 0.0,   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,// v0-v3-v4-v5 right
+    //     1.0, 1.0, 1.0,   1.0, 1.0,-1.0,  -1.0, 1.0,-1.0,  -1.0, 1.0, 1.0, 1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,   0.0, 1.0, 0.0,   0.0, 1.0, 0.0,   0.0, 1.0, 0.0,   0.0, 1.0, 0.0, // v0-v5-v6-v1 up
+    //     -1.0, 1.0, 1.0,  -1.0, 1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0,-1.0, 1.0,  1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0, -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0, // v1-v6-v7-v2 left
+    //     -1.0,-1.0,-1.0,   1.0,-1.0,-1.0,   1.0,-1.0, 1.0,  -1.0,-1.0, 1.0,  1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,  0.0,-1.0, 0.0,   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,// v7-v4-v3-v2 down
+    //     1.0,-1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0, 1.0,-1.0,   1.0, 1.0,-1.0 , 1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,  0.0, 0.0,-1.0,   0.0, 0.0,-1.0,   0.0, 0.0,-1.0,   0.0, 0.0,-1.0 // v4-v7-v6-v5 back
+    // ]);
+
     var vertices = new Float32Array([
-        1.0, 1.0, 1.0,  -1.0, 1.0, 1.0,  -1.0,-1.0, 1.0,   1.0,-1.0, 1.0,  1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,  0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,// v0-v1-v2-v3 front
-        1.0, 1.0, 1.0,   1.0,-1.0, 1.0,   1.0,-1.0,-1.0,   1.0, 1.0,-1.0,  1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,  1.0, 0.0, 0.0,   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,// v0-v3-v4-v5 right
-        1.0, 1.0, 1.0,   1.0, 1.0,-1.0,  -1.0, 1.0,-1.0,  -1.0, 1.0, 1.0, 1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,   0.0, 1.0, 0.0,   0.0, 1.0, 0.0,   0.0, 1.0, 0.0,   0.0, 1.0, 0.0, // v0-v5-v6-v1 up
-        -1.0, 1.0, 1.0,  -1.0, 1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0,-1.0, 1.0,  1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0, -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0, // v1-v6-v7-v2 left
-        -1.0,-1.0,-1.0,   1.0,-1.0,-1.0,   1.0,-1.0, 1.0,  -1.0,-1.0, 1.0,  1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,  0.0,-1.0, 0.0,   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,// v7-v4-v3-v2 down
-        1.0,-1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0, 1.0,-1.0,   1.0, 1.0,-1.0 , 1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,  0.0, 0.0,-1.0,   0.0, 0.0,-1.0,   0.0, 0.0,-1.0,   0.0, 0.0,-1.0 // v4-v7-v6-v5 back
+        1.0, 1.0, 1.0,  -1.0, 1.0, 1.0,  -1.0,-1.0, 1.0,   1.0,-1.0, 1.0, // v0-v1-v2-v3 front
+        1.0, 1.0, 1.0,   1.0,-1.0, 1.0,   1.0,-1.0,-1.0,   1.0, 1.0,-1.0, // v0-v3-v4-v5 right
+        1.0, 1.0, 1.0,   1.0, 1.0,-1.0,  -1.0, 1.0,-1.0,  -1.0, 1.0, 1.0, // v0-v5-v6-v1 up
+        -1.0, 1.0, 1.0,  -1.0, 1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0,-1.0, 1.0, // v1-v6-v7-v2 left
+        -1.0,-1.0,-1.0,   1.0,-1.0,-1.0,   1.0,-1.0, 1.0,  -1.0,-1.0, 1.0, // v7-v4-v3-v2 down
+        1.0,-1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0, 1.0,-1.0,   1.0, 1.0,-1.0  // v4-v7-v6-v5 back
+    ]);
+
+    var positions = new Float32Array([
+        1.0, 1.0, 1.0,
+        -1.0, 1.0, 1.0,
+        -1.0,-1.0, 1.0,
+        1.0,-1.0, 1.0,
+        1.0,-1.0,-1.0,
+        1.0, 1.0,-1.0,
+        -1.0, 1.0,-1.0,
+        -1.0,-1.0,-1.0,
     ]);
 
     // Colors
@@ -196,9 +216,17 @@ function VBObox1() {
     ]);
 
 
-    this.vboContents = vertices;
+    this.vboContents = new Float32Array(6 * 12 + 6 * 12 + 6*12);
+    var cnt = 0;
+    for (var i = 0; i < indices.length; i++) {
+        for (var j = 0; j < 3; j++) {
+            this.vboContents[cnt++] = vertices[i * 3 + j];
+            this.vboContents[cnt++] = colors[i * 3 + j];
+            this.vboContents[cnt++] = normals[i * 3 + j];
+        }
+    }
 
-    this.vboVerts = 6;						// # of vertices held in 'vboContents' array
+    this.vboVerts = indices.length;						// # of vertices held in 'vboContents' array
     this.FSIZE = this.vboContents.BYTES_PER_ELEMENT;
     // bytes req'd by 1 vboContents array element;
     // (why? used to compute stride and offset
@@ -214,14 +242,14 @@ function VBObox1() {
     // at the same attrib for the next vertex.
 
     //----------------------Attribute sizes
-    this.vboFcount_a_Pos0 =  4;    // # of floats in the VBO needed to store the
+    this.vboFcount_a_Pos0 =  3;    // # of floats in the VBO needed to store the
     // attribute named a_Pos0. (4: x,y,z,w values)
-    this.vboFcount_a_Colr0 = 4;   // # of floats for this attrib (r,g,b values)
-    this.vboFcount_a_Nor0 = 4;
-    console.assert((this.vboFcount_a_Pos0 +     // check the size of each and
-        this.vboFcount_a_Colr0 + this.vboFcount_a_Nor0) *   // every attribute in our VBO
-        this.FSIZE == this.vboStride, // for agreeement with'stride'
-        "Uh oh! VBObox0.vboStride disagrees with attribute-size values!");
+    this.vboFcount_a_Colr0 = 3;   // # of floats for this attrib (r,g,b values)
+    this.vboFcount_a_Nor0 = 3;
+    // console.assert((this.vboFcount_a_Pos0 +     // check the size of each and
+    //     this.vboFcount_a_Colr0 + this.vboFcount_a_Nor0) *   // every attribute in our VBO
+    //     this.FSIZE == this.vboStride, // for agreeement with'stride'
+    //     "Uh oh! VBObox0.vboStride disagrees with attribute-size values!");
 
     //----------------------Attribute offsets
     this.vboOffset_a_Pos0 = 0;    // # of bytes from START of vbo to the START
@@ -243,6 +271,9 @@ function VBObox1() {
 
     //---------------------- Uniform locations &values in our shaders
     this.ModelMat = new Matrix4();	// Transforms CVV axes to model axes.
+    this.viewMatrix = new Matrix4();   // View matrix
+    this.mvpMatrix = new Matrix4();    // Model view projection matrix
+    this.normalMatrix = new Matrix4(); // Transformation matrix for normals
     this.u_MvpMatLoc;							// GPU location for u_ModelMat uniform
     this.u_NorMatLoc;
     this.u_LightMatLoc;
@@ -445,25 +476,55 @@ VBObox1.prototype.adjust = function() {
             '.adjust() call you needed to call this.switchToMe()!!');
     }
     // Adjust values for our uniforms
-    this.ModelMat.setIdentity();
-    this.ModelMat.perspective(30, 1,1,1000);
-    this.ModelMat.lookAt(5, 5, 3, 2, 2, 2, 0, 0, 1);
-    // pushMatrix(this.ModelMat);
-    // this.ModelMat.setRotate(0, 0, 0, 1);	  // rotate drawing axes,
-    this.ModelMat.translate(0.35, 0, 0);							// then translate them.
-    //  Transfer new uniforms' values to the GPU:-------------
-    // Send  new 'ModelMat' values to the GPU's 'u_ModelMat1' uniform:
-    gl.uniformMatrix4fv(this.u_MvpMatLoc,	// GPU location of the uniform
-        false, 				// use matrix transpose instead?
-        this.ModelMat.elements);	// send data from Javascript.
-    gl.uniformMatrix4fv(this.u_LightMatLoc,	// GPU location of the uniform
-        false, 				// use matrix transpose instead?
-        this.ModelMat.elements);	// send data from Javascript.
-    gl.uniformMatrix4fv(this.u_NorMatLoc,	// GPU location of the uniform
-        false, 				// use matrix transpose instead?
-        this.ModelMat.elements);	// send data from Javascript.
-    // Adjust the attributes' stride and offset (if necessary)
-    // (use gl.vertexAttribPointer() calls and gl.enableVertexAttribArray() calls)
+    // Set the viewing volume
+
+
+    // Calculate the view matrix
+    this.viewMatrix.setLookAt(0, 3, 10, 0, 0, 0, 0, 1, 0);
+    this.ModelMat.set(this.viewMatrix).rotate(60, 0, 1, 0); // Rotate 60 degree around the y-axis
+    // Calculate the model view projection matrix
+    this.ModelMat.translate(0.35, -1, 2);
+    this.mvpMatrix.setPerspective(30, 1, 1, 1000);
+    this.mvpMatrix.multiply(this.ModelMat);
+    // Calculate the matrix to transform the normal based on the model matrix
+    this.normalMatrix.setInverseOf(this.ModelMat);
+    this.normalMatrix.transpose();
+
+
+    // Pass the model view matrix to u_mvpMatrix
+    gl.uniformMatrix4fv(this.u_MvpMatLoc, false, this.mvpMatrix.elements);
+
+    // Pass the normal matrixu_normalMatrix
+    gl.uniformMatrix4fv(this.u_NorMatLoc, false, this.normalMatrix.elements);
+
+    // Pass the direction of the diffuse light(world coordinate, normalized)
+    var lightDir = new Vector3([1.0, 1.0, 1.0]);
+    lightDir.normalize();     // Normalize
+    var lightDir_eye = this.viewMatrix.multiplyVector3(lightDir); // Transform to view coordinate
+    lightDir_eye.normalize(); // Normalize
+    gl.uniform3fv(this.u_LightMatLoc, lightDir_eye.elements);
+
+
+    // this.ModelMat.setIdentity();
+    // this.ModelMat.perspective(30, 1,1,1000);
+    // this.ModelMat.lookAt(5, 5, 3, 2, 2, 2, 0, 0, 1);
+    // // this.ModelMat.scale(10, 10, 10);
+    // // pushMatrix(this.ModelMat);
+    // // this.ModelMat.setRotate(0, 0, 0, 1);	  // rotate drawing axes,
+    // this.ModelMat.translate(0.35, 0, 1);							// then translate them.
+    // //  Transfer new uniforms' values to the GPU:-------------
+    // // Send  new 'ModelMat' values to the GPU's 'u_ModelMat1' uniform:
+    // gl.uniformMatrix4fv(this.u_MvpMatLoc,	// GPU location of the uniform
+    //     false, 				// use matrix transpose instead?
+    //     this.ModelMat.elements);	// send data from Javascript.
+    // // gl.uniformMatrix4fv(this.u_LightMatLoc,	// GPU location of the uniform
+    // //     false, 				// use matrix transpose instead?
+    // //     this.ModelMat.elements);	// send data from Javascript.
+    // gl.uniformMatrix4fv(this.u_NorMatLoc,	// GPU location of the uniform
+    //     false, 				// use matrix transpose instead?
+    //     this.ModelMat.elements);	// send data from Javascript.
+    // // Adjust the attributes' stride and offset (if necessary)
+    // // (use gl.vertexAttribPointer() calls and gl.enableVertexAttribArray() calls)
 }
 
 VBObox1.prototype.draw = function() {
@@ -478,11 +539,15 @@ VBObox1.prototype.draw = function() {
     }
     console.log("inside draw function");
     // ----------------------------Draw the contents of the currently-bound VBO:
-    gl.drawArrays(gl.LINES, 	    // select the drawing primitive to draw,
+    gl.drawArrays(gl.TRIANGLES, 	    // select the drawing primitive to draw,
         // choices: gl.POINTS, gl.LINES, gl.LINE_STRIP, gl.LINE_LOOP,
         //          gl.TRIANGLES, gl.TRIANGLE_STRIP, ...
         0, 								// location of 1st vertex to draw;
-        this.vboVerts);		// number of vertices to draw on-screen.
+        34);		// number of vertices to draw on-screen.
+    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // Draw the cube
+    // gl.drawElements(gl.TRIANGLES, this.vboContents, gl.UNSIGNED_BYTE, 0);
 }
 
 VBObox1.prototype.reload = function() {

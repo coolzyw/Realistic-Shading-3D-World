@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="86fb5d82-3f28-4889-a1be-94200c7e699f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MultiShader14/LightedCube_perFragment.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MultiShader14/JT_MultiShader.js" beforeDir="false" afterPath="$PROJECT_DIR$/MultiShader14/JT_MultiShader.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MultiShader14/JT_VBObox-Lib3.js" beforeDir="false" afterPath="$PROJECT_DIR$/MultiShader14/JT_VBObox-Lib3.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MultiShader14/LightedCube_perFragment.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../project/src/JTSecondLight_perFragment10b.js" beforeDir="false" afterPath="$PROJECT_DIR$/../project/src/JTSecondLight_perFragment10b.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -59,7 +59,7 @@
       <updated>1574442126471</updated>
       <workItem from="1574442129176" duration="11454000" />
       <workItem from="1574699095736" duration="5681000" />
-      <workItem from="1575410195739" duration="6176000" />
+      <workItem from="1575410195739" duration="12408000" />
     </task>
     <servers />
   </component>
