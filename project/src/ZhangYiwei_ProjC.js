@@ -230,6 +230,7 @@ var currentAngle = 0;
 var light_x = 6;
 var light_y = 5;
 var light_z = 5;
+var light_on = true;
 
 
 function main() {
@@ -251,6 +252,7 @@ function main() {
 	var rangeInput_x = document.getElementById("light_x");
 	var rangeInput_y = document.getElementById("light_y");
 	var rangeInput_z = document.getElementById("light_z");
+	var checkBox = document.getElementById("light_on_off");
 
 	rangeInput_x.oninput = function() {
 		light_x = this.value;
@@ -262,6 +264,15 @@ function main() {
 
 	rangeInput_z.oninput = function() {
 		light_z = this.value;
+	};
+
+	checkBox.oninput = function() {
+		if (this.checked === true) {
+			light_on = true;
+		}
+		else {
+			light_on = false;
+		}
 	};
 
 	// Initialize shaders
@@ -302,9 +313,6 @@ function main() {
 	// unless the new Z value is closer to the eye than the old one..
 	gl.depthFunc(gl.LESS);			 // WebGL default setting: (default)
 	gl.enable(gl.DEPTH_TEST);
-
-
-
 
 
 	// Create, save the storage locations of uniform variables: ... for the scene
@@ -379,7 +387,6 @@ function drawResize(gl, n) {
 // contains:  <body onload="main()" onresize="winResize()">
 
 	var nuCanvas = document.getElementById('webgl');	// get current canvas
-	var nuGL = getWebGLContext(nuCanvas);							// and context:
 
 
 	//Make canvas fill the top 3/4 of our browser window:
@@ -417,21 +424,28 @@ function drawTwoView(gl, n) {
 	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
 		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
 		0.0, 0.0, 1.0);     // 'up' vector
-	lamp0.I_pos.elements.set( [light_x, light_y, light_z]);
-	lamp0.I_ambi.elements.set([0.4, 0.4, 0.4]);
-	lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
-	lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
 	drawAll(gl, n);   // Draw shapes
 }
 
 function drawAll(gl, n) {
 	//---------------For the light source(s):
+	if (!light_on) {
+		lamp0.I_ambi.elements.set([0.0, 0.0, 0.0]);
+		lamp0.I_diff.elements.set([0.0, 0.0, 0.0]);
+		lamp0.I_spec.elements.set([0.0, 0.0, 0.0]);
+	}
+	else {
+		lamp0.I_pos.elements.set([light_x, light_y, light_z]);
+		lamp0.I_ambi.elements.set([0.4, 0.4, 0.4]);
+		lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
+		lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
+	}
+
 	gl.uniform3fv(lamp0.u_pos,  lamp0.I_pos.elements.slice(0,3));
 	//		 ('slice(0,3) member func returns elements 0,1,2 (x,y,z) )
 	gl.uniform3fv(lamp0.u_ambi, lamp0.I_ambi.elements);		// ambient
 	gl.uniform3fv(lamp0.u_diff, lamp0.I_diff.elements);		// diffuse
 	gl.uniform3fv(lamp0.u_spec, lamp0.I_spec.elements);		// Specular
-
 	//---------------For the Material object(s):
 	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
 	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
@@ -442,8 +456,6 @@ function drawAll(gl, n) {
 	drawGroundGrid(gl, n);
 	drawCube(gl, n);
 	drawPyramid(gl, n);
-
-
 }
 
 function drawGroundGrid(gl, n) {
