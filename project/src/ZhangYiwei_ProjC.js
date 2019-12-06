@@ -187,9 +187,7 @@ var yMclik=0.0;
 var xMdragTot=0.0;	// total (accumulated) mouse-drag amounts (in CVV coords).
 var yMdragTot=0.0;
 
-var qNew = new Quaternion(0,0,0,1); // most-recent mouse drag's rotation
 var qTot = new Quaternion(0,0,0,1);	// 'current' orientation (made from qNew)
-var quatMatrix = new Matrix4();				// rotation matrix, made from latest qTot
 var floatsPerVertex = 10;
 
 //  Global vars that hold GPU locations for 'uniform' variables.
@@ -521,6 +519,8 @@ function drawPyramid(gl, n) {
 }
 
 function drawCube(gl, n) {
+
+	modelMatrix = popMatrix();
 
 	matl0.setMatl(matlSel3);								// set new material reflectances,
 	//---------------For the Material object(s):
