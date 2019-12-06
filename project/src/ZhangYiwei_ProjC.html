@@ -11,14 +11,28 @@
     Please use a browser that supports "canvas"
     </canvas>
 	<p>
-		<!--BUTTONS: create HTML push-buttons with labels
-				Spin <<, runStop, and Spin >>.  
-		When clicked, these HTML buttons call JavaScript functions named
-			"spinDown()", "runStop()" and "spinUp()"   -->
       <button type="button" onclick="spinDown()">Spin << </button>
 	  <button type="button" onclick="runStop()">Run/Stop</button>
       <button type="button" onclick="spinUp()">Spin >> </button>
     </p>
+    <div>
+        <input type="range" id="light_x" name="cowbell"
+               min="0" max="10" value="6" step="0.5">
+        <label>Light x</label>
+    </div>
+
+    <div>
+        <input type="range" id="light_y" name="cowbell"
+               min="0" max="10" value="5" step="0.5">
+        <label>Light y</label>
+    </div>
+
+    <div>
+        <input type="range" id="light_z" name="cowbell"
+               min="0" max="10" value="5" step="0.5">
+        <label>Light z</label>
+    </div>
+
 	Open the JavaScript Console, please: 
 	(right-click-->'Inspect Element'-->'Console' tab). 
 		<br>

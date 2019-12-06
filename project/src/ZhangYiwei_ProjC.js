@@ -226,6 +226,12 @@ var theta = -3.14;
 var turn_height = 0;
 var currentAngle = 0;
 
+// --------------------- Light positions -----------------------------------
+var light_x = 6;
+var light_y = 5;
+var light_z = 5;
+
+
 function main() {
 //==============================================================================
 	// Retrieve <canvas> element
@@ -241,6 +247,22 @@ function main() {
 	gl = myGL;	// make it global--for every function to use.
 
 	window.addEventListener("keydown", myKeyDown, false);
+
+	var rangeInput_x = document.getElementById("light_x");
+	var rangeInput_y = document.getElementById("light_y");
+	var rangeInput_z = document.getElementById("light_z");
+
+	rangeInput_x.oninput = function() {
+		light_x = this.value;
+	};
+
+	rangeInput_y.oninput = function() {
+		light_y = this.value;
+	};
+
+	rangeInput_z.oninput = function() {
+		light_z = this.value;
+	};
 
 	// Initialize shaders
 	if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
@@ -325,12 +347,6 @@ function main() {
 	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
 	// (Note: uniform4fv() expects 4-element float32Array as its 2nd argument)
 
-	// Init World-coord. position & colors of first light source in global vars;
-	lamp0.I_pos.elements.set( [6.0, 5.0, 5.0]);
-	lamp0.I_ambi.elements.set([0.4, 0.4, 0.4]);
-	lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
-	lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
-
 
 	// NEW! -- make new canvas to fit the browser-window size;
 	drawResize(gl, n);   // On this first call, Chrome browser seems to use the
@@ -341,8 +357,6 @@ function main() {
 	// match the current browser size.
 	// Create, init current rotation angle value in JavaScript
 
-//====================================
-	testQuaternions();		// test fcn at end of file
 //=====================================
 
 	// ANIMATION: create 'tick' variable whose value is this function:
@@ -403,6 +417,10 @@ function drawTwoView(gl, n) {
 	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
 		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
 		0.0, 0.0, 1.0);     // 'up' vector
+	lamp0.I_pos.elements.set( [light_x, light_y, light_z]);
+	lamp0.I_ambi.elements.set([0.4, 0.4, 0.4]);
+	lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
+	lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
 	drawAll(gl, n);   // Draw shapes
 }
 
@@ -609,8 +627,6 @@ function myMouseMove(ev, gl, canvas) {
 	yMdragTot += (y - yMclik);
 	// AND use any mouse-dragging we found to update quaternions qNew and qTot.
 	//===================================================
-	dragQuat(x - xMclik, y - yMclik);
-	//===================================================
 	xMclik = x;													// Make NEXT drag-measurement from here.
 	yMclik = y;
 
@@ -648,130 +664,12 @@ function myMouseUp(ev, gl, canvas) {
 //	console.log('myMouseUp: xMdragTot,yMdragTot =',xMdragTot,',\t',yMdragTot);
 
 	// AND use any mouse-dragging we found to update quaternions qNew and qTot;
-	dragQuat(x - xMclik, y - yMclik);
-
 	// Show it on our webpage, in the <div> element named 'MouseText':
 	document.getElementById('MouseText').innerHTML=
 		'Mouse Drag totals (CVV x,y coords):\t'+
 		xMdragTot.toFixed(5)+', \t'+
 		yMdragTot.toFixed(5);
 };
-
-function dragQuat(xdrag, ydrag) {
-//==============================================================================
-// Called when user drags mouse by 'xdrag,ydrag' as measured in CVV coords.
-// We find a rotation axis perpendicular to the drag direction, and convert the
-// drag distance to an angular rotation amount, and use both to set the value of
-// the quaternion qNew.  We then combine this new rotation with the current
-// rotation stored in quaternion 'qTot' by quaternion multiply.  Note the
-// 'draw()' function converts this current 'qTot' quaternion to a rotation
-// matrix for drawing.
-	var res = 5;
-	var qTmp = new Quaternion(0,0,0,1);
-
-	var dist = Math.sqrt(xdrag*xdrag + ydrag*ydrag);
-	// console.log('xdrag,ydrag=',xdrag.toFixed(5),ydrag.toFixed(5),'dist=',dist.toFixed(5));
-	qNew.setFromAxisAngle(-ydrag + 0.0001, xdrag + 0.0001, 0.0, dist*150.0);
-	// (why add tiny 0.0001? To ensure we never have a zero-length rotation axis)
-	// why axis (x,y,z) = (-yMdrag,+xMdrag,0)?
-	// -- to rotate around +x axis, drag mouse in -y direction.
-	// -- to rotate around +y axis, drag mouse in +x direction.
-
-	qTmp.multiply(qNew,qTot);			// apply new rotation to current rotation.
-	//--------------------------
-	// IMPORTANT! Why qNew*qTot instead of qTot*qNew? (Try it!)
-	// ANSWER: Because 'duality' governs ALL transformations, not just matrices.
-	// If we multiplied in (qTot*qNew) order, we would rotate the drawing axes
-	// first by qTot, and then by qNew--we would apply mouse-dragging rotations
-	// to already-rotated drawing axes.  Instead, we wish to apply the mouse-drag
-	// rotations FIRST, before we apply rotations from all the previous dragging.
-	//------------------------
-	// IMPORTANT!  Both qTot and qNew are unit-length quaternions, but we store
-	// them with finite precision. While the product of two (EXACTLY) unit-length
-	// quaternions will always be another unit-length quaternion, the qTmp length
-	// may drift away from 1.0 if we repeat this quaternion multiply many times.
-	// A non-unit-length quaternion won't work with our quaternion-to-matrix fcn.
-	// Matrix4.prototype.setFromQuat().
-//	qTmp.normalize();						// normalize to ensure we stay at length==1.0.
-	qTot.copy(qTmp);
-	// show the new quaternion qTot on our webpage in the <div> element 'QuatValue'
-	document.getElementById('QuatValue').innerHTML=
-		'\t X=' +qTot.x.toFixed(res)+
-		'i\t Y=' +qTot.y.toFixed(res)+
-		'j\t Z=' +qTot.z.toFixed(res)+
-		'k\t W=' +qTot.w.toFixed(res)+
-		'<br>length='+qTot.length().toFixed(res);
-};
-
-function testQuaternions() {
-//==============================================================================
-// Test our little "quaternion-mod.js" library with simple rotations for which
-// we know the answers; print results to make sure all functions work as
-// intended.
-// 1)  Test constructors and value-setting functions:
-
-	var res = 5;
-	var myQuat = new Quaternion(1,2,3,4);
-	console.log('constructor: myQuat(x,y,z,w)=',
-		myQuat.x, myQuat.y, myQuat.z, myQuat.w);
-	myQuat.clear();
-	console.log('myQuat.clear()=',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res),
-		myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-	myQuat.set(1,2, 3,4);
-	console.log('myQuat.set(1,2,3,4)=',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res),
-		myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-	console.log('myQuat.length()=', myQuat.length().toFixed(res));
-	myQuat.normalize();
-	console.log('myQuat.normalize()=',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-	// Simplest possible quaternions:
-	myQuat.setFromAxisAngle(1,0,0,0);
-	console.log('Set myQuat to 0-deg. rot. on x axis=',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-	myQuat.setFromAxisAngle(0,1,0,0);
-	console.log('set myQuat to 0-deg. rot. on y axis=',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-	myQuat.setFromAxisAngle(0,0,1,0);
-	console.log('set myQuat to 0-deg. rot. on z axis=',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res), '\n');
-
-	myQmat = new Matrix4();
-	myQuat.setFromAxisAngle(1,0,0, 90.0);
-	console.log('set myQuat to +90-deg rot. on x axis =',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-	myQmat.setFromQuat(myQuat.x, myQuat.y, myQuat.z, myQuat.w);
-	console.log('myQuat as matrix: (+y axis <== -z axis)(+z axis <== +y axis)');
-	myQmat.printMe();
-
-	myQuat.setFromAxisAngle(0,1,0, 90.0);
-	console.log('set myQuat to +90-deg rot. on y axis =',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-	myQmat.setFromQuat(myQuat.x, myQuat.y, myQuat.z, myQuat.w);
-	console.log('myQuat as matrix: (+x axis <== +z axis)(+z axis <== -x axis)');
-	myQmat.printMe();
-
-	myQuat.setFromAxisAngle(0,0,1, 90.0);
-	console.log('set myQuat to +90-deg rot. on z axis =',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-	myQmat.setFromQuat(myQuat.x, myQuat.y, myQuat.z, myQuat.w);
-	console.log('myQuat as matrix: (+x axis <== -y axis)(+y axis <== +x axis)');
-	myQmat.printMe();
-
-	// Test quaternion multiply:
-	// (q1*q2) should rotate drawing axes by q1 and then by q2;  it does!
-	var qx90 = new Quaternion;
-	var qy90 = new Quaternion;
-	qx90.setFromAxisAngle(1,0,0,90.0);			// +90 deg on x axis
-	qy90.setFromAxisAngle(0,1,0,90.0);			// +90 deg on y axis.
-	myQuat.multiply(qx90,qy90);
-	console.log('set myQuat to (90deg x axis) * (90deg y axis) = ',
-		myQuat.x.toFixed(res), myQuat.y.toFixed(res), myQuat.z.toFixed(res), myQuat.w.toFixed(res));
-	myQmat.setFromQuat(myQuat.x, myQuat.y, myQuat.z, myQuat.w);
-	console.log('myQuat as matrix: (+x <== +z)(+y <== +x )(+z <== +y');
-	myQmat.printMe();
-}
 
 
 function myKeyDown(kev) {
