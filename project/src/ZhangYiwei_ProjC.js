@@ -210,8 +210,9 @@ var lamp0 = new LightsT();
 
 // ... for our first material:
 var matlSel= MATL_RED_PLASTIC;				// see keypress(): 'm' key changes matlSel
+var matlSel2= MATL_RED_PLASTIC + 1;
+var matlSel3= MATL_RED_PLASTIC + 2;
 var matl0 = new Material(matlSel);
-
 
 // --------------------- Global Variables----------------------------------
 var canvas;		// main() sets this to the HTML-5 'canvas' element used for WebGL.
@@ -446,12 +447,6 @@ function drawAll(gl, n) {
 	gl.uniform3fv(lamp0.u_ambi, lamp0.I_ambi.elements);		// ambient
 	gl.uniform3fv(lamp0.u_diff, lamp0.I_diff.elements);		// diffuse
 	gl.uniform3fv(lamp0.u_spec, lamp0.I_spec.elements);		// Specular
-	//---------------For the Material object(s):
-	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
-	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
-	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
-	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
-	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
 
 	drawGroundGrid(gl, n);
 	drawCube(gl, n);
@@ -463,6 +458,14 @@ function drawGroundGrid(gl, n) {
 	pushMatrix(modelMatrix);
 	pushMatrix(modelMatrix);
 	pushMatrix(modelMatrix);
+
+	matl0.setMatl(matlSel);								// set new material reflectances,
+	//---------------For the Material object(s):
+	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
+	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
+	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
+	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
 
 	modelMatrix.translate(1,0,0);
 	normalMatrix.setInverseOf(modelMatrix);
@@ -482,6 +485,16 @@ function drawPyramid(gl, n) {
 	//-------Create Spinning Tetrahedron-----------------------------------------
 	// (Projection and View matrices, if you had them, would go here)
 	modelMatrix = popMatrix();
+
+
+	matl0.setMatl(matlSel2);								// set new material reflectances,
+	//---------------For the Material object(s):
+	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
+	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
+	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
+	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
+
 	modelMatrix.translate(-0.4,-5, 0);  // 'set' means DISCARD old matrix,
 	// (drawing axes centered in CVV), and then make new
 	// drawing axes moved to the lower-left corner of CVV.
@@ -508,6 +521,16 @@ function drawPyramid(gl, n) {
 }
 
 function drawCube(gl, n) {
+
+	matl0.setMatl(matlSel3);								// set new material reflectances,
+	//---------------For the Material object(s):
+	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
+	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
+	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
+	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
+
+
 	modelMatrix.translate(2, 0,0);
 	modelMatrix.scale(0.5,0.5,0.5);
 	mvpMatrix.multiply(modelMatrix);
