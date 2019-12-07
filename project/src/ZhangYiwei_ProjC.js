@@ -179,22 +179,31 @@ var FSHADER_SOURCE =
 	// Try it two different ways:		The 'new hotness': pow() fcn in GLSL.
 	// CAREFUL!  pow() won't accept integer exponents! Convert K_shiny!
 
-	'  float e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
-	// if it is blinn phong
-	'if (is_Blinn == 1) {\n' +
-	'  e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
-	'}\n' +
-	'else {\n' +
-	'  e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
-	'}\n' +
 
+	// '  float e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
+
+	// if it is blinn phong
+	'vec3 emissive;\n' +
+	'vec3 ambient;\n' +
+	'vec3 diffuse;\n' +
+	'vec3 speculr;\n' +
+	'float e64;\n' +
+
+	'e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
 	// Calculate the final color from diffuse reflection and ambient reflection
 	//  '	 vec3 emissive = u_Ke;' +
-	'	 vec3 emissive = 										u_MatlSet[0].emit;' +
-	'  vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
-	'  vec3 diffuse = u_LampSet[0].diff * v_Kd * nDotL;\n' +
-	'	 vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
-	'  gl_FragColor = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
+	'emissive = 										u_MatlSet[0].emit;' +
+	'ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
+	'diffuse = u_LampSet[0].diff * v_Kd * nDotL;\n' +
+	'speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+	'gl_FragColor = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
+
+	'if (is_Blinn == 0) {\n' +
+		'e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
+		'speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+		'gl_FragColor = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
+		'}\n' +
+
 	'}\n';
 
 // Global Variables for the spinning tetrahedron:
@@ -253,7 +262,7 @@ var light_on = true;
 
 // --------------------- Blinn Control -----------------------------------
 // blinn location and initial value(not blinn phong)
-var u_isBlinn = 0;
+var u_isBlinn;
 var blinn = 0;
 
 function main() {
@@ -302,7 +311,8 @@ function main() {
 	};
 
 	blinnCheck.oninput = function() {
-		if (this.checked === true) {
+		console.log("this value", this.value);
+		if (this.value === 'BlinnOn') {
 			blinn = 1;
 			document.getElementById("blinn_status").innerHTML = "Blinn On";
 		}
@@ -394,20 +404,21 @@ function main() {
 		console.log('Failed to get GPUs Reflectance storage locations');
 		return;
 	}
+	gl.uniform1i(u_isBlinn, blinn);
 	// Position the camera in world coordinates:
 	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
 	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
 	// (Note: uniform4fv() expects 4-element float32Array as its 2nd argument)
 
 
-	// NEW! -- make new canvas to fit the browser-window size;
-	drawResize(gl, n);   // On this first call, Chrome browser seems to use the
-	// initial fixed canvas size we set in the HTML file;
-	// But by default Chrome opens its browser at the same
-	// size & location where you last closed it, so
-	drawResize(gl, n);   // Call drawResize() a SECOND time to re-size canvas to
-	// match the current browser size.
-	// Create, init current rotation angle value in JavaScript
+	// // NEW! -- make new canvas to fit the browser-window size;
+	// drawResize(gl, n);   // On this first call, Chrome browser seems to use the
+	// // initial fixed canvas size we set in the HTML file;
+	// // But by default Chrome opens its browser at the same
+	// // size & location where you last closed it, so
+	// drawResize(gl, n);   // Call drawResize() a SECOND time to re-size canvas to
+	// // match the current browser size.
+	// // Create, init current rotation angle value in JavaScript
 
 //=====================================
 
@@ -415,9 +426,14 @@ function main() {
 	//-----------------
 	var tick = function() {
 		currentAngle = animate(currentAngle);  // Update the rotation angle
+		console.log(blinn);
+		gl.uniform1i(u_isBlinn, blinn);
+		eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+		gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
 		drawResize(gl, n);
 //    console.log('currentAngle=',currentAngle); // put text in console.
 		requestAnimationFrame(tick, canvas);
+
 		// Request that the browser re-draw the webpage
 		// (causes webpage to endlessly re-draw itself)
 	};
@@ -432,10 +448,24 @@ function drawResize(gl, n) {
 
 	var nuCanvas = document.getElementById('webgl');	// get current canvas
 
-
 	//Make canvas fill the top 3/4 of our browser window:
 	nuCanvas.width = innerWidth;
 	nuCanvas.height = innerHeight*4/5;
+	gl.uniform1i(u_isBlinn, blinn);
+
+	//---------------For the light source(s):
+	if (!light_on) {
+		lamp0.I_ambi.elements.set([0.0, 0.0, 0.0]);
+		lamp0.I_diff.elements.set([0.0, 0.0, 0.0]);
+		lamp0.I_spec.elements.set([0.0, 0.0, 0.0]);
+	}
+	else {
+		lamp0.I_pos.elements.set([light_x, light_y, light_z]);
+		lamp0.I_ambi.elements.set([0.4, 0.4, 0.4]);
+		lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
+		lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
+	}
+
 
 
 	// IMPORTANT!  Need a fresh drawing in the re-sized viewports.
@@ -472,21 +502,6 @@ function drawTwoView(gl, n) {
 }
 
 function drawAll(gl, n) {
-	//---------------For the light source(s):
-	if (!light_on) {
-		lamp0.I_ambi.elements.set([0.0, 0.0, 0.0]);
-		lamp0.I_diff.elements.set([0.0, 0.0, 0.0]);
-		lamp0.I_spec.elements.set([0.0, 0.0, 0.0]);
-	}
-	else {
-		lamp0.I_pos.elements.set([light_x, light_y, light_z]);
-		lamp0.I_ambi.elements.set([0.4, 0.4, 0.4]);
-		lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
-		lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
-	}
-
-	gl.uniform1i(u_isBlinn, blinn);
-
 	gl.uniform3fv(lamp0.u_pos,  lamp0.I_pos.elements.slice(0,3));
 	//		 ('slice(0,3) member func returns elements 0,1,2 (x,y,z) )
 	gl.uniform3fv(lamp0.u_ambi, lamp0.I_ambi.elements);		// ambient
@@ -540,7 +555,7 @@ function drawPyramid(gl, n) {
 	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
 	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
 
-	modelMatrix.translate(-0.4,-5, 0);  // 'set' means DISCARD old matrix,
+	modelMatrix.translate(-3,-5, 0);  // 'set' means DISCARD old matrix,
 	// (drawing axes centered in CVV), and then make new
 	// drawing axes moved to the lower-left corner of CVV.
 	modelMatrix.scale(1,1,-1);							// convert to left-handed coord sys
@@ -576,7 +591,6 @@ function drawCube(gl, n) {
 	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
 	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
 	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
-
 
 	modelMatrix.translate(2, 0,0);
 	modelMatrix.scale(0.5,0.5,0.5);
