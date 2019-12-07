@@ -141,6 +141,9 @@ var FSHADER_SOURCE =
 	// Ambient? Emissive? Specular? almost
 	// NEVER change per-vertex: I use 'uniform' values
 
+	//-------------UNIFORMS: values to control the bling or not
+	'uniform int is_Blinn;\n' +
+
 	'void main() { \n' +
 	// Normalize! !!IMPORTANT!! TROUBLE if you don't!
 	// normals interpolated for each pixel aren't 1.0 in length any more!
@@ -176,10 +179,14 @@ var FSHADER_SOURCE =
 	// Try it two different ways:		The 'new hotness': pow() fcn in GLSL.
 	// CAREFUL!  pow() won't accept integer exponents! Convert K_shiny!
 
-
 	'  float e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
-
-	// '  float e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
+	// if it is blinn phong
+	'if (is_Blinn == 1) {\n' +
+	'  e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
+	'}\n' +
+	'else {\n' +
+	'  e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
+	'}\n' +
 
 	// Calculate the final color from diffuse reflection and ambient reflection
 	//  '	 vec3 emissive = u_Ke;' +
@@ -244,6 +251,10 @@ var light_y = 5;
 var light_z = 5;
 var light_on = true;
 
+// --------------------- Blinn Control -----------------------------------
+// blinn location and initial value(not blinn phong)
+var u_isBlinn = 0;
+var blinn = 0;
 
 function main() {
 //==============================================================================
@@ -265,6 +276,7 @@ function main() {
 	var rangeInput_y = document.getElementById("light_y");
 	var rangeInput_z = document.getElementById("light_z");
 	var checkBox = document.getElementById("light_on_off");
+	var blinnCheck = document.getElementById("blinn_on_off");
 
 	rangeInput_x.oninput = function() {
 		light_x = this.value;
@@ -281,9 +293,23 @@ function main() {
 	checkBox.oninput = function() {
 		if (this.checked === true) {
 			light_on = true;
+			document.getElementById("light_status").innerHTML = "light On";
 		}
 		else {
 			light_on = false;
+			document.getElementById("light_status").innerHTML = "light Off";
+		}
+	};
+
+	blinnCheck.oninput = function() {
+		if (this.checked === true) {
+			blinn = 1;
+			document.getElementById("blinn_status").innerHTML = "Blinn On";
+		}
+		else {
+			blinn = 0;
+			document.getElementById("blinn_status").innerHTML = "Blinn Off";
+
 		}
 	};
 
@@ -347,6 +373,12 @@ function main() {
 	lamp0.u_spec = gl.getUniformLocation(gl.program, 'u_LampSet[0].spec');
 	if( !lamp0.u_pos || !lamp0.u_ambi	|| !lamp0.u_diff || !lamp0.u_spec	) {
 		console.log('Failed to get GPUs Lamp0 storage locations');
+		return;
+	}
+
+	u_isBlinn = gl.getUniformLocation(gl.program, 'is_Blinn');
+	if (!u_isBlinn) {
+		console.log('Failed to get GPUs u_isBlinn storage position');
 		return;
 	}
 
@@ -452,6 +484,8 @@ function drawAll(gl, n) {
 		lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
 		lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
 	}
+
+	gl.uniform1i(u_isBlinn, blinn);
 
 	gl.uniform3fv(lamp0.u_pos,  lamp0.I_pos.elements.slice(0,3));
 	//		 ('slice(0,3) member func returns elements 0,1,2 (x,y,z) )
