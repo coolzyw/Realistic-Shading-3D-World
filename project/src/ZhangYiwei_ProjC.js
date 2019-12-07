@@ -163,11 +163,24 @@ var FSHADER_SOURCE =
 	// (see http://en.wikipedia.org/wiki/Blinn-Phong_shading_model)
 	'  vec3 H = normalize(lightDirection + eyeDirection); \n' +
 	'  float nDotH = max(dot(H, normal), 0.0); \n' +
+	'  float e02 = nDotH*nDotH; \n' +
+	'  float e04 = e02*e02; \n' +
+	'  float e08 = e04*e04; \n' +
+	'	 float e16 = e08*e08; \n' +
+	'	 float e32 = e16*e16; \n' +
+	'vec3 R = reflect(-lightDirection, normal);' +
+	'float vDotR = max(dot(eyeDirection, R), 0.0);' +
+	// '	 float e64 = e32*e32;	\n' +
 	// (use max() to discard any negatives from lights below the surface)
 	// Apply the 'shininess' exponent K_e:
 	// Try it two different ways:		The 'new hotness': pow() fcn in GLSL.
 	// CAREFUL!  pow() won't accept integer exponents! Convert K_shiny!
+
+
 	'  float e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
+
+	// '  float e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
+
 	// Calculate the final color from diffuse reflection and ambient reflection
 	//  '	 vec3 emissive = u_Ke;' +
 	'	 vec3 emissive = 										u_MatlSet[0].emit;' +
