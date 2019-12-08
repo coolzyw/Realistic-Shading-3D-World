@@ -551,7 +551,7 @@ function drawPyramid(gl, n) {
 	//modelMatrix = popMatrix();
 
 
-	modelMatrix.translate(-3,5, 0);  // 'set' means DISCARD old matrix,
+	modelMatrix.translate(-3,5, -3);  // 'set' means DISCARD old matrix,
 	// (drawing axes centered in CVV), and then make new
 	// drawing axes moved to the lower-left corner of CVV.
 	modelMatrix.scale(2,2,-2);							// convert to left-handed coord sys
@@ -586,7 +586,7 @@ function drawPyramid(gl, n) {
 function drawCube(gl, n) {
 	modelMatrix = popMatrix();
 
-	modelMatrix.translate(2, 0,0);
+	modelMatrix.translate(2, 0,0.5);
 	modelMatrix.scale(0.5,0.5,0.5);
 	mvpMatrix.multiply(modelMatrix);
 	normalMatrix.setInverseOf(modelMatrix);
@@ -611,7 +611,7 @@ function drawCube(gl, n) {
 function drawSphere(gl, n) {
 	modelMatrix = popMatrix();
 
-	modelMatrix.translate(9, 0,1.5);
+	modelMatrix.translate(9, 0,2);
 	modelMatrix.scale(2,2,2);
 	modelMatrix.rotate(currentAngle, 0, 0, 1);
 	mvpMatrix.multiply(modelMatrix);
