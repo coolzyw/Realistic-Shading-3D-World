@@ -199,10 +199,10 @@ var FSHADER_SOURCE =
 	'gl_FragColor = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
 
 	'if (is_Blinn == 0) {\n' +
-		'e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
-		'speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
-		'gl_FragColor = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
-		'}\n' +
+	'e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
+	'speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+	'gl_FragColor = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
+	'}\n' +
 
 	'}\n';
 
@@ -245,7 +245,6 @@ var matl0 = new Material(matlSel);
 // --------------------- Global Variables----------------------------------
 var canvas;		// main() sets this to the HTML-5 'canvas' element used for WebGL.
 var gl;				// main() sets this to the rendering context for WebGL. This object
-var g_canvas = document.getElementById('webgl');
 
 // --------------------- Eye positions -----------------------------------
 var g_EyeX = -0.5, g_EyeY = 8.6, g_EyeZ = 1; // Eye position
@@ -260,7 +259,6 @@ var light_x = 6;
 var light_y = 5;
 var light_z = 5;
 var light_on = true;
-var ratio = (innerWidth) / innerHeight;
 
 // --------------------- Blinn Control -----------------------------------
 // blinn location and initial value(not blinn phong)
@@ -273,7 +271,7 @@ function main() {
 	canvas = document.getElementById('webgl');
 
 	// Get the rendering context for WebGL
-	var myGL = getWebGLContext(g_canvas);
+	var myGL = getWebGLContext(canvas);
 	if (!myGL) {
 		console.log('Failed to get the rendering context for WebGL');
 		return;
@@ -417,11 +415,11 @@ function main() {
 
 
 	// // NEW! -- make new canvas to fit the browser-window size;
-	// drawResize(gl, n);   // On this first call, Chrome browser seems to use the
+	drawResize(gl, n);   // On this first call, Chrome browser seems to use the
 	// // initial fixed canvas size we set in the HTML file;
 	// // But by default Chrome opens its browser at the same
 	// // size & location where you last closed it, so
-	// drawResize(gl, n);   // Call drawResize() a SECOND time to re-size canvas to
+	drawResize(gl, n);   // Call drawResize() a SECOND time to re-size canvas to
 	// // match the current browser size.
 	// // Create, init current rotation angle value in JavaScript
 
@@ -452,27 +450,24 @@ function drawResize(gl, n) {
 // contains:  <body onload="main()" onresize="winResize()">
 
 	var nuCanvas = document.getElementById('webgl');	// get current canvas
-
+	var nuGL = getWebGLContext(nuCanvas);
 	//Make canvas fill the top 3/4 of our browser window:
 	nuCanvas.width = innerWidth;
 	nuCanvas.height = innerHeight*4/5;
 	// IMPORTANT!  Need a fresh drawing in the re-sized viewports.
-	drawTwoView(gl, n);
+	drawTwoView(nuGL, n);
 }
 
 function drawTwoView(gl, n) {
-	// Specify the color for clearing <canvas>
-	// NEW!! Enable 3D depth-test when drawing: don't over-draw at any pixel
-	// unless the new Z value is closer to the eye than the old one..
 
-	// Get handle to graphics system's storage location of u_ModelMatrix
-	// var viewMatrix = new Matrix4();
+	gl.enable(gl.DEPTH_TEST);
 
-	// store the view matrix and projection matrix
-	// var u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
-
-	// Create, init current rotation angle value in JavaScript
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+	gl.viewport(0,											 				// Viewport lower-left corner
+		0, 			// location(in pixels)
+		gl.drawingBufferWidth, 					// viewport width,
+		gl.drawingBufferHeight);			// viewport height in pixels.
 
 	//---------------For the light source(s):
 	if (!light_on) {
@@ -495,8 +490,6 @@ function drawTwoView(gl, n) {
 	gl.uniform3fv(lamp0.u_spec, lamp0.I_spec.elements);		// Specular
 	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
 
-	gl.viewport(0, 0, g_canvas.width, g_canvas.height);
-
 	drawAll(gl, n);   // Draw shapes
 }
 
@@ -516,6 +509,7 @@ function drawAll(gl, n) {
 
 function drawGroundGrid(gl, n) {
 	// draw ground grid
+	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
 	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
 		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
 		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
@@ -561,6 +555,7 @@ function drawPyramid(gl, n) {
 	// if you DON'T scale, tetra goes outside the CVV; clipped!
 	modelMatrix.rotate(180 + currentAngle, 0, 1, 0);  // spin drawing axes on Y axis;
 	// Calculate the matrix to transform the normal based on the model matrix
+	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
 	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
 		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
 		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
@@ -599,6 +594,7 @@ function drawCube(gl, n) {
 
 	modelMatrix.translate(2, 0,0.5);
 	modelMatrix.scale(0.5,0.5,0.5);
+	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
 	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
 		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
 		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
@@ -635,7 +631,7 @@ function drawSphere(gl, n) {
 
 	modelMatrix.translate(-3, 0,1);
 	modelMatrix.rotate(currentAngle, 0, 0, 1);
-
+	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
 	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
 		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
 		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
