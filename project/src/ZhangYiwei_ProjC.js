@@ -144,8 +144,6 @@ var FSHADER_SOURCE =
 
 	//-------------UNIFORMS: values to control the bling or not
 	'uniform int is_Blinn;\n' +
-	'uniform int is_head;\n' +
-	'uniform int is_world;\n' +
 
 	'void main() { \n' +
 	// Normalize! !!IMPORTANT!! TROUBLE if you don't!
@@ -173,16 +171,10 @@ var FSHADER_SOURCE =
 	'  vec3 H2 = normalize(lightDirection2 + eyeDirection); \n' +
 	'  float nDotH = max(dot(H, normal), 0.0); \n' +
 	'  float nDotH2 = max(dot(H2, normal), 0.0); \n' +
-	'  float e02 = nDotH*nDotH; \n' +
-	'  float e04 = e02*e02; \n' +
-	'  float e08 = e04*e04; \n' +
-	'	 float e16 = e08*e08; \n' +
-	'	 float e32 = e16*e16; \n' +
 	'vec3 R = reflect(-lightDirection, normal);' +
 	'vec3 R2 = reflect(-lightDirection2, normal);' +
 	'float vDotR = max(dot(eyeDirection, R), 0.0);' +
 	'float vDotR2 = max(dot(eyeDirection, R2), 0.0);' +
-	// '	 float e64 = e32*e32;	\n' +
 	// (use max() to discard any negatives from lights below the surface)
 	// Apply the 'shininess' exponent K_e:
 	// Try it two different ways:		The 'new hotness': pow() fcn in GLSL.
@@ -213,30 +205,25 @@ var FSHADER_SOURCE =
 	'ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
 	'diffuse = u_LampSet[0].diff * v_Kd * nDotL;\n' +
 	'speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
-	'vec4 frag_world = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
+
 
 	'head_emissive = 										u_MatlSet[0].emit;' +
-	'head_ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
-	'head_diffuse = u_LampSet[0].diff * v_Kd * nDotL;\n' +
-	'head_speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
-	'vec4 frag_head = vec4(head_emissive + head_ambient + head_diffuse + head_speculr , 1.0);\n' +
+	'head_ambient = u_LampSet[1].ambi * u_MatlSet[0].ambi;\n' +
+	'head_diffuse = u_LampSet[1].diff * v_Kd * nDotL2;\n' +
+	'head_speculr = u_LampSet[1].spec * u_MatlSet[0].spec * head_e64;\n' +
+
 
 	'if (is_Blinn == 0) {\n' +
 	'   e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
 	'   speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
 	'   head_e64 = pow(vDotR2, float(u_MatlSet[0].shiny));\n' +
-	'   head_speculr = u_LampSet[0].spec * u_MatlSet[0].spec * head_e64;\n' +
+	'   head_speculr = u_LampSet[1].spec * u_MatlSet[0].spec * head_e64;\n' +
 	'}\n' +
 
-	'if (is_head == 1 && is_world == 1) {\n' +
-	'   gl_FragColor = frag_world + frag_head;\n' +
-	'}\n' +
-	'else if (is_head == 1 && is_world == 0) {\n' +
-	'   gl_FragColor = frag_head;\n' +
-	'}\n' +
-	'else {\n' +
-	'   gl_FragColor = frag_world;\n' +
-	'}\n' +
+	'vec4 frag_world = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
+	'vec4 frag_head = vec4(head_emissive + head_ambient + head_diffuse + head_speculr , 1.0);\n' +
+
+	'gl_FragColor = frag_world + frag_head;\n' +
 
 	'}\n';
 
@@ -268,6 +255,7 @@ var	normalMatrix= new Matrix4();	// Transformation matrix for normals
 
 //	... for our first light source:   (stays false if never initialized)
 var lamp0 = new LightsT();
+var lamp1 = new LightsT();
 
 // ... for our first material:
 var matlSel= MATL_RED_PLASTIC;				// see keypress(): 'm' key changes matlSel
@@ -292,7 +280,8 @@ var currentAngle = 0;
 var light_x = 6;
 var light_y = 5;
 var light_z = 5;
-var light_on = true;
+var world_light_on = true;
+var head_light_on = true;
 
 // --------------------- Blinn Control -----------------------------------
 // blinn location and initial value(not blinn phong)
@@ -322,6 +311,7 @@ function main() {
 	var rangeInput_y = document.getElementById("light_y");
 	var rangeInput_z = document.getElementById("light_z");
 	var checkBox = document.getElementById("light_on_off");
+	var head_checkBox = document.getElementById("head_light_on_off");
 	var blinnCheck = document.getElementById("blinn_on_off");
 
 	rangeInput_x.oninput = function() {
@@ -338,12 +328,23 @@ function main() {
 
 	checkBox.oninput = function() {
 		if (this.checked === true) {
-			light_on = true;
+			world_light_on = true;
 			document.getElementById("light_status").innerHTML = "light On";
 		}
 		else {
-			light_on = false;
+			world_light_on = false;
 			document.getElementById("light_status").innerHTML = "light Off";
+		}
+	};
+
+	head_checkBox.oninput = function() {
+		if (this.checked === true) {
+			head_light_on = true;
+			document.getElementById("head_light_status").innerHTML = "Head light On";
+		}
+		else {
+			head_light_on = false;
+			document.getElementById("head_light_status").innerHTML = "Head light Off";
 		}
 	};
 
@@ -423,6 +424,15 @@ function main() {
 		return;
 	}
 
+	lamp1.u_pos  = gl.getUniformLocation(gl.program, 'u_LampSet[1].pos');
+	lamp1.u_ambi = gl.getUniformLocation(gl.program, 'u_LampSet[1].ambi');
+	lamp1.u_diff = gl.getUniformLocation(gl.program, 'u_LampSet[1].diff');
+	lamp1.u_spec = gl.getUniformLocation(gl.program, 'u_LampSet[1].spec');
+	if( !lamp1.u_pos || !lamp1.u_ambi	|| !lamp1.u_diff || !lamp1.u_spec	) {
+		console.log('Failed to get GPUs Lamp1 storage locations');
+		return;
+	}
+
 	u_isBlinn = gl.getUniformLocation(gl.program, 'is_Blinn');
 	if (!u_isBlinn) {
 		console.log('Failed to get GPUs u_isBlinn storage position');
@@ -467,6 +477,18 @@ function main() {
 		gl.uniform1i(u_isBlinn, blinn);
 		eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
 		gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
+		if (!head_light_on) {
+			lamp1.I_ambi.elements.set([0.0, 0.0, 0.0]);
+			lamp1.I_diff.elements.set([0.0, 0.0, 0.0]);
+			lamp1.I_spec.elements.set([0.0, 0.0, 0.0]);
+		}
+		else {
+			lamp1.I_pos.elements.set([g_EyeX, g_EyeY, g_EyeZ]);
+			console.log(g_EyeX, g_EyeY, g_EyeZ);
+			lamp1.I_ambi.elements.set([0.4, 0.4, 0.4]);
+			lamp1.I_diff.elements.set([1.0, 1.0, 1.0]);
+			lamp1.I_spec.elements.set([1.0, 1.0, 1.0]);
+		}
 		drawResize(gl, n);
 //    console.log('currentAngle=',currentAngle); // put text in console.
 		requestAnimationFrame(tick, canvas);
@@ -504,7 +526,7 @@ function drawTwoView(gl, n) {
 		gl.drawingBufferHeight);			// viewport height in pixels.
 
 	//---------------For the light source(s):
-	if (!light_on) {
+	if (!world_light_on) {
 		lamp0.I_ambi.elements.set([0.0, 0.0, 0.0]);
 		lamp0.I_diff.elements.set([0.0, 0.0, 0.0]);
 		lamp0.I_spec.elements.set([0.0, 0.0, 0.0]);
@@ -515,6 +537,7 @@ function drawTwoView(gl, n) {
 		lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
 		lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
 	}
+
 	gl.uniform1i(u_isBlinn, blinn);
 
 	gl.uniform3fv(lamp0.u_pos,  lamp0.I_pos.elements.slice(0,3));
@@ -522,8 +545,14 @@ function drawTwoView(gl, n) {
 	gl.uniform3fv(lamp0.u_ambi, lamp0.I_ambi.elements);		// ambient
 	gl.uniform3fv(lamp0.u_diff, lamp0.I_diff.elements);		// diffuse
 	gl.uniform3fv(lamp0.u_spec, lamp0.I_spec.elements);		// Specular
-	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
 
+	gl.uniform3fv(lamp1.u_pos,  lamp1.I_pos.elements.slice(0,3));
+	//		 ('slice(0,3) member func returns elements 0,1,2 (x,y,z) )
+	gl.uniform3fv(lamp1.u_ambi, lamp1.I_ambi.elements);		// ambient
+	gl.uniform3fv(lamp1.u_diff, lamp1.I_diff.elements);		// diffuse
+	gl.uniform3fv(lamp1.u_spec, lamp1.I_spec.elements);		// Specular
+
+	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
 	drawAll(gl, n);   // Draw shapes
 }
 
@@ -655,6 +684,7 @@ function drawCube(gl, n) {
 	// Pass our current Normal matrix to the vertex shaders:
 	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
 	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+
 	gl.drawArrays(gl.TRIANGLES,             // use this drawing primitive, and
 		cubeStart / floatsPerVertex, // start at this vertex number, and
 		cubeVerts.length / floatsPerVertex);   // draw this many vertices
