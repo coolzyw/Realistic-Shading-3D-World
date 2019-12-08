@@ -232,6 +232,32 @@ function main() {
 
   // Draw the cube
   gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
+
+  pushMatrix(modelMatrix);
+  // draw the second one
+    modelMatrix.translate(3, 0, 1); // Rotate around the y-axis
+
+    mvpMatrix.multiply(modelMatrix);
+    // Calculate the matrix to transform the normal based on the model matrix
+    normalMatrix.setInverseOf(modelMatrix);
+    normalMatrix.transpose();
+
+    // Pass the eye position to u_eyePosWorld
+    gl.uniform4f(u_eyePosWorld, 6,0,0, 1);
+    // Pass the model matrix to u_ModelMatrix
+    gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+
+    // Pass the model view projection matrix to u_mvpMatrix
+    gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
+
+    // Pass the transformation matrix for normals to u_NormalMatrix
+    gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
+
+    // Clear color and depth buffer
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // Draw the cube
+    gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
 }
 
 function initVertexBuffers(gl) { // Create a sphere

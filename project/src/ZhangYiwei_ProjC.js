@@ -260,6 +260,7 @@ var light_x = 6;
 var light_y = 5;
 var light_z = 5;
 var light_on = true;
+var ratio = (innerWidth) / innerHeight;
 
 // --------------------- Blinn Control -----------------------------------
 // blinn location and initial value(not blinn phong)
@@ -279,6 +280,9 @@ function main() {
 	}
 
 	gl = myGL;	// make it global--for every function to use.
+
+	gl.clearColor(0.4, 0.4, 0.4, 1.0);
+	gl.enable(gl.DEPTH_TEST);
 
 	window.addEventListener("keydown", myKeyDown, false);
 
@@ -452,8 +456,6 @@ function drawResize(gl, n) {
 	//Make canvas fill the top 3/4 of our browser window:
 	nuCanvas.width = innerWidth;
 	nuCanvas.height = innerHeight*4/5;
-	gl.uniform1i(u_isBlinn, blinn);
-
 	// IMPORTANT!  Need a fresh drawing in the re-sized viewports.
 	drawTwoView(gl, n);
 }
@@ -462,7 +464,6 @@ function drawTwoView(gl, n) {
 	// Specify the color for clearing <canvas>
 	// NEW!! Enable 3D depth-test when drawing: don't over-draw at any pixel
 	// unless the new Z value is closer to the eye than the old one..
-	gl.enable(gl.DEPTH_TEST);
 
 	// Get handle to graphics system's storage location of u_ModelMatrix
 	// var viewMatrix = new Matrix4();
@@ -472,18 +473,6 @@ function drawTwoView(gl, n) {
 
 	// Create, init current rotation angle value in JavaScript
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-	var ratio = (innerWidth) / innerHeight;
-	gl.viewport(0, 0, g_canvas.width, g_canvas.height);
-	modelMatrix.setIdentity();
-	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
-		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
-		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
-		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
-	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
-	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
-		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
-		0.0, 0.0, 1.0);     // 'up' vector
 
 	//---------------For the light source(s):
 	if (!light_on) {
@@ -497,6 +486,8 @@ function drawTwoView(gl, n) {
 		lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
 		lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
 	}
+	gl.uniform1i(u_isBlinn, blinn);
+
 	gl.uniform3fv(lamp0.u_pos,  lamp0.I_pos.elements.slice(0,3));
 	//		 ('slice(0,3) member func returns elements 0,1,2 (x,y,z) )
 	gl.uniform3fv(lamp0.u_ambi, lamp0.I_ambi.elements);		// ambient
@@ -504,10 +495,13 @@ function drawTwoView(gl, n) {
 	gl.uniform3fv(lamp0.u_spec, lamp0.I_spec.elements);		// Specular
 	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
 
+	gl.viewport(0, 0, g_canvas.width, g_canvas.height);
+
 	drawAll(gl, n);   // Draw shapes
 }
 
 function drawAll(gl, n) {
+	modelMatrix.setIdentity();
 	pushMatrix(modelMatrix);
 	pushMatrix(modelMatrix);
 	pushMatrix(modelMatrix);
@@ -522,7 +516,14 @@ function drawAll(gl, n) {
 
 function drawGroundGrid(gl, n) {
 	// draw ground grid
-	modelMatrix = popMatrix();
+	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
+		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
+		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
+		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
+	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
+	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
+		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
+		0.0, 0.0, 1.0);     // 'up' vector
 	matl0.setMatl(matlSel);								// set new material reflectances,
 
 	modelMatrix.translate(1,0,0);
@@ -536,6 +537,8 @@ function drawGroundGrid(gl, n) {
 	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
 	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
 	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
+	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
 	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
 	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
 	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
@@ -547,11 +550,8 @@ function drawGroundGrid(gl, n) {
 
 function drawPyramid(gl, n) {
 	//-------Create Spinning Tetrahedron-----------------------------------------
-	// (Projection and View matrices, if you had them, would go here)
-	//modelMatrix = popMatrix();
 
-
-	modelMatrix.translate(-3,5, -3);  // 'set' means DISCARD old matrix,
+	modelMatrix = popMatrix();
 	// (drawing axes centered in CVV), and then make new
 	// drawing axes moved to the lower-left corner of CVV.
 	modelMatrix.scale(2,2,-2);							// convert to left-handed coord sys
@@ -559,8 +559,17 @@ function drawPyramid(gl, n) {
 	// (THIS STILL PUZZLES ME!)
 	modelMatrix.scale(0.5, 0.5, 0.5);
 	// if you DON'T scale, tetra goes outside the CVV; clipped!
-	modelMatrix.rotate(180, 0, 1, 0);  // spin drawing axes on Y axis;
+	modelMatrix.rotate(180 + currentAngle, 0, 1, 0);  // spin drawing axes on Y axis;
 	// Calculate the matrix to transform the normal based on the model matrix
+	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
+		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
+		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
+		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
+	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
+	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
+		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
+		0.0, 0.0, 1.0);
+	matl0.setMatl(matlSel);
 	normalMatrix.setInverseOf(modelMatrix);
 	normalMatrix.transpose();
 	mvpMatrix.multiply(modelMatrix);
@@ -574,6 +583,8 @@ function drawPyramid(gl, n) {
 	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
 	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
 	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
 	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
 	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
 	// Pass our current Normal matrix to the vertex shaders:
@@ -588,9 +599,18 @@ function drawCube(gl, n) {
 
 	modelMatrix.translate(2, 0,0.5);
 	modelMatrix.scale(0.5,0.5,0.5);
+	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
+		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
+		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
+		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
+	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
+	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
+		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
+		0.0, 0.0, 1.0);
 	mvpMatrix.multiply(modelMatrix);
 	normalMatrix.setInverseOf(modelMatrix);
 	normalMatrix.transpose();
+
 
 	matl0.setMatl(matlSel3);								// set new material reflectances,
 	//---------------For the Material object(s):
@@ -598,6 +618,8 @@ function drawCube(gl, n) {
 	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
 	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
 	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
 	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
 	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
 	// Pass our current Normal matrix to the vertex shaders:
@@ -611,9 +633,18 @@ function drawCube(gl, n) {
 function drawSphere(gl, n) {
 	modelMatrix = popMatrix();
 
-	modelMatrix.translate(9, 0,2);
-	modelMatrix.scale(2,2,2);
+	modelMatrix.translate(-3, 0,1);
 	modelMatrix.rotate(currentAngle, 0, 0, 1);
+
+	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
+		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
+		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
+		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
+	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
+	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
+		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
+		0.0, 0.0, 1.0);
+
 	mvpMatrix.multiply(modelMatrix);
 	normalMatrix.setInverseOf(modelMatrix);
 	normalMatrix.transpose();
@@ -623,6 +654,8 @@ function drawSphere(gl, n) {
 	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
 	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
 	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
 	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
 	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
 	// Pass our current Normal matrix to the vertex shaders:

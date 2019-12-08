@@ -264,6 +264,9 @@ var lamp0 = new LightsT();
 var matlSel= MATL_RED_PLASTIC;				// see keypress(): 'm' key changes matlSel
 var matl0 = new Material(matlSel);
 
+var currentAngle = 0;
+var ANGLE_STEP = 10;
+
 // ---------------END of global vars----------------------------
 
 //=============================================================================
@@ -378,6 +381,16 @@ function main() {
 	//					on-screen re-drawing)
 
 	draw();
+
+	var tick = function() {
+		currentAngle = animate(currentAngle);  // Update the rotation angle
+		draw();
+		requestAnimationFrame(tick, canvas);
+		// Request that the browser re-draw the webpage
+		// (causes webpage to endlessly re-draw itself)
+	};
+	tick();							// start (and continue) animation: draw current image
+
 }
 
 function draw() {
@@ -426,6 +439,69 @@ function draw() {
 
 // Draw the shape(s) in our VBO
 	gl.drawElements(gl.TRIANGLES, n_vcount, gl.UNSIGNED_SHORT, 0);
+
+	pushMatrix(modelMatrix);
+// ---------------------------- draw second element
+	modelMatrix.translate(0,1,0);
+	modelMatrix.rotate(currentAngle, 0, 1, 0);
+	mvpMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
+	mvpMatrix.lookAt(	eyePosWorld[0], eyePosWorld[1], eyePosWorld[2], // eye pos
+		0,  0, 0, 				// aim-point (in world coords)
+		0,  0, 1);				// up (in world coords)
+	mvpMatrix.multiply(modelMatrix);
+	// Calculate the matrix to transform the normal based on the model matrix
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
+
+	// Send the new matrix values to their locations in the GPU:
+	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+
+	// Clear color and depth buffer
+	// gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+// Draw the shape(s) in our VBO
+	gl.drawElements(gl.TRIANGLES, n_vcount, gl.UNSIGNED_SHORT, 0);
+
+	// ---------draw the third matrix
+	modelMatrix = popMatrix();
+	modelMatrix.rotate(currentAngle, 0, 1, 0);
+	modelMatrix.translate(0,-2,0);
+	mvpMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
+	mvpMatrix.lookAt(	eyePosWorld[0], eyePosWorld[1], eyePosWorld[2], // eye pos
+		0,  0, 0, 				// aim-point (in world coords)
+		0,  0, 1);				// up (in world coords)
+	mvpMatrix.multiply(modelMatrix);
+	// Calculate the matrix to transform the normal based on the model matrix
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
+
+	// Send the new matrix values to their locations in the GPU:
+	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+
+	// Clear color and depth buffer
+	// gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+// Draw the shape(s) in our VBO
+	gl.drawElements(gl.TRIANGLES, n_vcount, gl.UNSIGNED_SHORT, 0);
+}
+
+var g_last = Date.now();
+function animate(angle) {
+//==============================================================================
+	// Calculate the elapsed time
+	var now = Date.now();
+	var elapsed = now - g_last;
+	g_last = now;
+
+	// Update the current rotation angle (adjusted by the elapsed time)
+	var newAngle = angle + (ANGLE_STEP * elapsed) / 1000.0;
+	if(newAngle > 180.0) newAngle = newAngle - 360.0;
+	if(newAngle <-180.0) newAngle = newAngle + 360.0;
+	return newAngle;
 }
 
 function initVertexBuffers(gl) { // Create a sphere
