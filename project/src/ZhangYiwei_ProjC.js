@@ -128,7 +128,8 @@ var FSHADER_SOURCE =
 	//
 	//-------------UNIFORMS: values set from JavaScript before a drawing command.
 	// first light source: (YOU write a second one...)
-	'uniform LampT u_LampSet[1];\n' +		// Array of all light sources.
+	// u_LampT[0] is the worldLight, u_LampT[0] is the headLight
+	'uniform LampT u_LampSet[2];\n' +		// Array of all light sources.
 	'uniform MatlT u_MatlSet[1];\n' +		// Array of all materials.
 	//
 	'uniform vec3 u_eyePosWorld; \n' + 	// Camera/eye location in world coords.
@@ -143,6 +144,8 @@ var FSHADER_SOURCE =
 
 	//-------------UNIFORMS: values to control the bling or not
 	'uniform int is_Blinn;\n' +
+	'uniform int is_head;\n' +
+	'uniform int is_world;\n' +
 
 	'void main() { \n' +
 	// Normalize! !!IMPORTANT!! TROUBLE if you don't!
@@ -152,6 +155,7 @@ var FSHADER_SOURCE =
 	//	'  vec3 normal = v_Normal; \n' +
 	// Find the unit-length light dir vector 'L' (surface pt --> light):
 	'  vec3 lightDirection = normalize(u_LampSet[0].pos - v_Position.xyz);\n' +
+	'  vec3 lightDirection2 = normalize(u_LampSet[1].pos - v_Position.xyz);\n' +
 	// Find the unit-length eye-direction vector 'V' (surface pt --> camera)
 	'  vec3 eyeDirection = normalize(u_eyePosWorld - v_Position.xyz); \n' +
 	// The dot product of (unit-length) light direction and the normal vector
@@ -159,20 +163,25 @@ var FSHADER_SOURCE =
 	// (look in GLSL manual: what other functions would help?)
 	// gives us the cosine-falloff factor needed for the diffuse lighting term:
 	'  float nDotL = max(dot(lightDirection, normal), 0.0); \n' +
+	'  float nDotL2 = max(dot(lightDirection2, normal), 0.0); \n' +
 	// The Blinn-Phong lighting model computes the specular term faster
 	// because it replaces the (V*R)^shiny weighting with (H*N)^shiny,
 	// where 'halfway' vector H has a direction half-way between L and V
 	// H = norm(norm(V) + norm(L)).  Note L & V already normalized above.
 	// (see http://en.wikipedia.org/wiki/Blinn-Phong_shading_model)
 	'  vec3 H = normalize(lightDirection + eyeDirection); \n' +
+	'  vec3 H2 = normalize(lightDirection2 + eyeDirection); \n' +
 	'  float nDotH = max(dot(H, normal), 0.0); \n' +
+	'  float nDotH2 = max(dot(H2, normal), 0.0); \n' +
 	'  float e02 = nDotH*nDotH; \n' +
 	'  float e04 = e02*e02; \n' +
 	'  float e08 = e04*e04; \n' +
 	'	 float e16 = e08*e08; \n' +
 	'	 float e32 = e16*e16; \n' +
 	'vec3 R = reflect(-lightDirection, normal);' +
+	'vec3 R2 = reflect(-lightDirection2, normal);' +
 	'float vDotR = max(dot(eyeDirection, R), 0.0);' +
+	'float vDotR2 = max(dot(eyeDirection, R2), 0.0);' +
 	// '	 float e64 = e32*e32;	\n' +
 	// (use max() to discard any negatives from lights below the surface)
 	// Apply the 'shininess' exponent K_e:
@@ -189,19 +198,44 @@ var FSHADER_SOURCE =
 	'vec3 speculr;\n' +
 	'float e64;\n' +
 
+	'vec3 head_emissive;\n' +
+	'vec3 head_ambient;\n' +
+	'vec3 head_diffuse;\n' +
+	'vec3 head_speculr;\n' +
+	'float head_e64;\n' +
+
+
 	'e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
+	'head_e64 = pow(nDotH2, float(u_MatlSet[0].shiny));\n' +
 	// Calculate the final color from diffuse reflection and ambient reflection
 	//  '	 vec3 emissive = u_Ke;' +
 	'emissive = 										u_MatlSet[0].emit;' +
 	'ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
 	'diffuse = u_LampSet[0].diff * v_Kd * nDotL;\n' +
 	'speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
-	'gl_FragColor = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
+	'vec4 frag_world = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
+
+	'head_emissive = 										u_MatlSet[0].emit;' +
+	'head_ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
+	'head_diffuse = u_LampSet[0].diff * v_Kd * nDotL;\n' +
+	'head_speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+	'vec4 frag_head = vec4(head_emissive + head_ambient + head_diffuse + head_speculr , 1.0);\n' +
 
 	'if (is_Blinn == 0) {\n' +
-	'e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
-	'speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
-	'gl_FragColor = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
+	'   e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
+	'   speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+	'   head_e64 = pow(vDotR2, float(u_MatlSet[0].shiny));\n' +
+	'   head_speculr = u_LampSet[0].spec * u_MatlSet[0].spec * head_e64;\n' +
+	'}\n' +
+
+	'if (is_head == 1 && is_world == 1) {\n' +
+	'   gl_FragColor = frag_world + frag_head;\n' +
+	'}\n' +
+	'else if (is_head == 1 && is_world == 0) {\n' +
+	'   gl_FragColor = frag_head;\n' +
+	'}\n' +
+	'else {\n' +
+	'   gl_FragColor = frag_world;\n' +
 	'}\n' +
 
 	'}\n';
