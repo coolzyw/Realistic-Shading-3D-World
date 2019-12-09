@@ -608,8 +608,6 @@ function drawGroundGrid(gl, n) {
 
 
 function drawPyramid(gl, n) {
-	//-------Create Spinning Tetrahedron-----------------------------------------
-
 	modelMatrix = popMatrix();
 	// (drawing axes centered in CVV), and then make new
 	// drawing axes moved to the lower-left corner of CVV.
@@ -618,7 +616,8 @@ function drawPyramid(gl, n) {
 	// (THIS STILL PUZZLES ME!)
 	modelMatrix.scale(0.5, 0.5, 0.5);
 	// if you DON'T scale, tetra goes outside the CVV; clipped!
-	modelMatrix.rotate(180 + currentAngle, 0, 1, 0);  // spin drawing axes on Y axis;
+	modelMatrix.rotate(currentAngle, 0, 0, 1);  // spin drawing axes on Y axis;
+	modelMatrix.rotate(180, 0, 1, 0);  // spin drawing axes on Y axis;
 	// Calculate the matrix to transform the normal based on the model matrix
 	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
 	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
@@ -1181,58 +1180,58 @@ function makeCube() {
 
 
 		// +x face: RED
-		1.0 * length, -1.0 * width, -1.0 * height, 1.0,		0.7, 0.9, 0.1,	0,0,1,// Node 3
-		1.0 * length,  1.0 * width, -1.0 * height, 1.0,		0, 1, 0,	0,0,1,// Node 2
-		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,  0,0,1,// Node 4
-
-		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,	0,0,1,// Node 4
-		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  0.9, 1, 0.9,	0,0,1,// Node 7
-		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1, 0,0,1,	// Node 3
-
-		// +y face: GREEN
-		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1, 1,0,0,	// Node 1
-		-1.0 * length,  1.0 * width, 1.0 * height, 1.0,	  0.3, 0.3, 1,	1,0,0,// Node 5
-		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.9, 0, 0.3,	1,0,0,// Node 4
+		1.0 * length, -1.0 * width, -1.0 * height, 1.0,		0.7, 0.9, 0.1,	1,0,0,// Node 3
+		1.0 * length,  1.0 * width, -1.0 * height, 1.0,		0, 1, 0,	1,0,0,// Node 2
+		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,  1,0,0,// Node 4
 
 		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,	1,0,0,// Node 4
-		1.0 * length,  1.0 * width, -1.0 * height, 1.0,	  0, 1, 0,	 1,0,0,// Node 2
-		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1, 1,0,0,	// Node 1
+		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  0.9, 1, 0.9,	1,0,0,// Node 7
+		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1, 1,0,0,	// Node 3
+
+		// +y face: GREEN
+		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,  0, 0.4, 1,    0,1,0,	// Node 1
+		-1.0 * length,  1.0 * width, 1.0 * height, 1.0,	  0.3, 0.3, 1,	0,1,0,// Node 5
+		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.9, 0, 0.3,	0,1,0,// Node 4
+
+		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,	0,1,0,// Node 4
+		1.0 * length,  1.0 * width, -1.0 * height, 1.0,	  0, 1, 0,	    0,1,0,// Node 2
+		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,  0, 0.4, 1,    0,1,0,	// Node 1
 
 		// +z face: BLUE
-		-1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.3, 0.3, 1, 0,1,0, // Node 5
-		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	0,1,0, // Node 6
-		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	 	0.9, 1, 0.9,	0,1,0, // Node 7
+		-1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.3, 0.3, 1,   0,0,1, // Node 5
+		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	0,0,1, // Node 6
+		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	 	0.9, 1, 0.9,	0,0,1, // Node 7
 
-		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  0.9, 1, 0.9,	0,1,0, // Node 7
-		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,	0,1,0, // Node 4
-		-1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.3, 0.3, 1,	0,1,0, // Node 5
+		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  0.9, 1, 0.9,	    0,0,1, // Node 7
+		1.0 * length,  1.0 * width,  1.0 * height, 1.0,	  0.9, 0, 0.3,	    0,0,1, // Node 4
+		-1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.3, 0.3, 1,	0,0,1, // Node 5
 
 		// -x face: CYAN
-		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	0,0,-1,// Node 6
-		-1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.3, 0.3, 1,	0,0,-1,// Node 5
-		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1,	0,0,-1,// Node 1
+		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	-1,0,0,// Node 6
+		-1.0 * length,  1.0 * width,  1.0 * height, 1.0,	 0.3, 0.3, 1,	-1,0,0,// Node 5
+		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1,	-1,0,0,// Node 1
 
-		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1,	0,0,-1,// Node 1
-		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	 0.3, 0.6, 0.7,	0,0,-1,// Node 0
-		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	0,0,-1,// Node 6
+		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1,	-1,0,0,// Node 1
+		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	 0.3, 0.6, 0.7,	-1,0,0,// Node 0
+		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	-1,0,0,// Node 6
 
 		// -y face: MAGENTA
-		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1,	-1, 0, 0,// Node 3
-		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  0.9, 1, 0.9,	-1, 0, 0,// Node 7
-		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	-1, 0, 0,// Node 6
+		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1,	0, -1, 0,// Node 3
+		1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  0.9, 1, 0.9,	    0, -1, 0,// Node 7
+		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	  1, 0.9, 0.2,	0, -1, 0,// Node 6
 
-		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	 1, 0.9, 0.2,	-1, 0, 0,// Node 6
-		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.3, 0.6, 0.7,	-1, 0, 0,// Node 0
-		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1,	-1, 0, 0,// Node 3
+		-1.0 * length, -1.0 * width,  1.0 * height, 1.0,	 1, 0.9, 0.2,	0, -1, 0,// Node 6
+		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.3, 0.6, 0.7,0, -1, 0,// Node 0
+		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1,	0, -1, 0,// Node 3
 
 		// -z face: YELLOW
-		1.0 * length,  1.0 * width, -1.0 * height, 1.0,	 0, 1, 0,   0, -1, 0,// Node 2
-		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1,	0, -1, 0,// Node 3
-		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	 0.3, 0.6, 0.7,	0, -1, 0,// Node 0
+		1.0 * length,  1.0 * width, -1.0 * height, 1.0,	 0, 1, 0,           0, 0, -1,// Node 2
+		1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.7, 0.9, 0.1,	0, 0, -1,// Node 3
+		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	 0.3, 0.6, 0.7,	0, 0, -1,// Node 0
 
-		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	  0.3, 0.6, 0.7,	0, -1, 0,// Node 0
-		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1,	0, -1, 0,// Node 1
-		1.0 * length,  1.0 * width, -1.0 * height, 1.0,	  0, 1, 0,	0, -1, 0,// Node 2
+		-1.0 * length, -1.0 * width, -1.0 * height, 1.0,	 0.3, 0.6, 0.7, 0, 0, -1,// Node 0
+		-1.0 * length,  1.0 * width, -1.0 * height, 1.0,	   0, 0.4, 1,	0, 0, -1,// Node 1
+		1.0 * length,  1.0 * width, -1.0 * height, 1.0,	  0, 1, 0,	        0, 0, -1,// Node 2
 
 	]);
 
