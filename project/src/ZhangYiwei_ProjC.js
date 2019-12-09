@@ -99,11 +99,74 @@ var VSHADER_SOURCE =
 	'  v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
 	'  v_Kd = u_MatlSet[0].diff; \n' +		// find per-pixel diffuse reflectance from per-vertex
 
+	'if (is_Gouraud == 1){ \n' +
+	'	vec3 normal = normalize(v_Normal); \n' +
+	//	'  vec3 normal = v_Normal; \n' +
+	// Find the unit-length light dir vector 'L' (surface pt --> light):
+	'  	vec3 lightDirection = normalize(u_LampSet[0].pos - v_Position.xyz);\n' +
+	'  	vec3 lightDirection2 = normalize(u_LampSet[1].pos - v_Position.xyz);\n' +
+	// Find the unit-length eye-direction vector 'V' (surface pt --> camera)
+	'  	vec3 eyeDirection = normalize(u_eyePosWorld - v_Position.xyz); \n' +
+	// The dot product of (unit-length) light direction and the normal vector
+	// (use max() to discard any negatives from lights below the surface)
+	// (look in GLSL manual: what other functions would help?)
+	// gives us the cosine-falloff factor needed for the diffuse lighting term:
+	'  	float nDotL = max(dot(lightDirection, normal), 0.0); \n' +
+	'  	float nDotL2 = max(dot(lightDirection2, normal), 0.0); \n' +
+	// The Blinn-Phong lighting model computes the specular term faster
+	// because it replaces the (V*R)^shiny weighting with (H*N)^shiny,
+	// where 'halfway' vector H has a direction half-way between L and V
+	// H = norm(norm(V) + norm(L)).  Note L & V already normalized above.
+	// (see http://en.wikipedia.org/wiki/Blinn-Phong_shading_model)
+	'  	vec3 H = normalize(lightDirection + eyeDirection); \n' +
+	'  	vec3 H2 = normalize(lightDirection2 + eyeDirection); \n' +
+	'  	float nDotH = max(dot(H, normal), 0.0); \n' +
+	'  	float nDotH2 = max(dot(H2, normal), 0.0); \n' +
+	'	vec3 R = reflect(-lightDirection, normal);' +
+	'	vec3 R2 = reflect(-lightDirection2, normal);' +
+	'	float vDotR = max(dot(eyeDirection, R), 0.0);' +
+	'	float vDotR2 = max(dot(eyeDirection, R2), 0.0);' +
+
+	// if it is blinn phong
+	'	vec3 emissive;\n' +
+	'	vec3 ambient;\n' +
+	'	vec3 diffuse;\n' +
+	'	vec3 speculr;\n' +
+	'	float e64;\n' +
+
+	'	vec3 head_emissive;\n' +
+	'	vec3 head_ambient;\n' +
+	'	vec3 head_diffuse;\n' +
+	'	vec3 head_speculr;\n' +
+	'	float head_e64;\n' +
 
 
+	'	e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
+	'	head_e64 = pow(nDotH2, float(u_MatlSet[0].shiny));\n' +
+	'	emissive = 										u_MatlSet[0].emit;' +
+	'	ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
+	'	diffuse = u_LampSet[0].diff * v_Kd * nDotL;\n' +
+	'	speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
 
 
+	'	head_emissive = 										u_MatlSet[0].emit;' +
+	'	head_ambient = u_LampSet[1].ambi * u_MatlSet[0].ambi;\n' +
+	'	head_diffuse = u_LampSet[1].diff * v_Kd * nDotL2;\n' +
+	'	head_speculr = u_LampSet[1].spec * u_MatlSet[0].spec * head_e64;\n' +
 
+
+	'	if (is_Blinn == 0) {\n' +
+	'   	e64 = pow(vDotR, float(u_MatlSet[0].shiny));\n' +
+	'   	speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+	'   	head_e64 = pow(vDotR2, float(u_MatlSet[0].shiny));\n' +
+	'   	head_speculr = u_LampSet[1].spec * u_MatlSet[0].spec * head_e64;\n' +
+	'	}\n' +
+
+	'	vec4 frag_world = vec4(emissive + ambient + diffuse + speculr , 1.0);\n' +
+	'	vec4 frag_head = vec4(head_emissive + head_ambient + head_diffuse + head_speculr , 1.0);\n' +
+
+	'	v_Color = frag_world + frag_head;\n' +
+	'} \n' +
 
 	'}\n';
 
@@ -287,7 +350,9 @@ var head_light_on = true;
 // blinn location and initial value(not blinn phong)
 // initialized to gouraud shading
 var u_isBlinn;
+var u_isGouraud;
 var blinn = 0;
+var is_Gouraud = 1;
 
 function main() {
 //==============================================================================
@@ -364,17 +429,17 @@ function main() {
 	};
 
 
-	// shaderCheck.oninput = function() {
-	// 	console.log("this value", this.value);
-	// 	if (this.value === 'Gouraud') {
-	// 		initShaders(gl, VSHADER_SOURCE2, FSHADER_SOURCE2);
-	// 		document.getElementById("shader_status").innerHTML = "Gouraud";
-	// 	}
-	// 	else {
-	// 		document.getElementById("shader_status").innerHTML = "Phong";
-	// 		initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE);
-	// 	}
-	// };
+	shaderCheck.oninput = function() {
+		console.log("this value", this.value);
+		if (this.value === 'Gouraud') {
+			is_Gouraud = 1;
+			document.getElementById("shader_status").innerHTML = "Gouraud";
+		}
+		else {
+			is_Gouraud = 0;
+			document.getElementById("shader_status").innerHTML = "Phong";
+		}
+	};
 
 	// Initialize shaders
 	if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
@@ -454,6 +519,12 @@ function main() {
 		return;
 	}
 
+	u_isGouraud = gl.getUniformLocation(gl.program, 'is_Gouraud');
+	if (!u_isGouraud) {
+		console.log('Failed to get GPUs u_isGouraud storage position');
+		return;
+	}
+
 	// ... for Phong material/reflectance:
 	matl0.uLoc_Ke = gl.getUniformLocation(gl.program, 'u_MatlSet[0].emit');
 	matl0.uLoc_Ka = gl.getUniformLocation(gl.program, 'u_MatlSet[0].ambi');
@@ -467,6 +538,7 @@ function main() {
 		return;
 	}
 	gl.uniform1i(u_isBlinn, blinn);
+	gl.uniform1i(u_isGouraud, is_Gouraud);
 	// Position the camera in world coordinates:
 	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
 	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
@@ -490,6 +562,7 @@ function main() {
 		currentAngle = animate(currentAngle);  // Update the rotation angle
 		console.log(blinn);
 		gl.uniform1i(u_isBlinn, blinn);
+		gl.uniform1i(u_isGouraud, is_Gouraud);
 		eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
 		gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
 		if (!head_light_on) {
@@ -554,6 +627,7 @@ function drawTwoView(gl, n) {
 	}
 
 	gl.uniform1i(u_isBlinn, blinn);
+	gl.uniform1i(u_isGouraud, is_Gouraud);
 
 	gl.uniform3fv(lamp0.u_pos,  lamp0.I_pos.elements.slice(0,3));
 	//		 ('slice(0,3) member func returns elements 0,1,2 (x,y,z) )
