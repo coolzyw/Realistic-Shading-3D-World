@@ -352,10 +352,12 @@ function main() {
 		console.log("this value", this.value);
 		if (this.value === 'BlinnOn') {
 			blinn = 1;
+			initVertexBuffer(gl);
 			document.getElementById("blinn_status").innerHTML = "Blinn On";
 		}
 		else {
 			blinn = 0;
+			initVertexBuffer(gl);
 			document.getElementById("blinn_status").innerHTML = "Blinn Off";
 
 		}
