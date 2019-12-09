@@ -403,11 +403,11 @@ function main() {
 	checkBox.oninput = function() {
 		if (this.checked === true) {
 			world_light_on = true;
-			document.getElementById("light_status").innerHTML = "light On";
+			document.getElementById("light_status").innerHTML = "World light On";
 		}
 		else {
 			world_light_on = false;
-			document.getElementById("light_status").innerHTML = "light Off";
+			document.getElementById("light_status").innerHTML = "World light Off";
 		}
 	};
 
@@ -426,12 +426,9 @@ function main() {
 		console.log("this value", this.value);
 		if (this.value === 'BlinnOn') {
 			blinn = 1;
-			document.getElementById("blinn_status").innerHTML = "Blinn On";
 		}
 		else {
 			blinn = 0;
-			document.getElementById("blinn_status").innerHTML = "Blinn Off";
-
 		}
 	};
 
@@ -440,11 +437,9 @@ function main() {
 		console.log("this value", this.value);
 		if (this.value === 'Gouraud') {
 			is_Gouraud = 1;
-			document.getElementById("shader_status").innerHTML = "Gouraud";
 		}
 		else {
 			is_Gouraud = 0;
-			document.getElementById("shader_status").innerHTML = "Phong";
 		}
 	};
 
@@ -460,25 +455,6 @@ function main() {
 		console.log('Failed to set the vertex information');
 		return;
 	}
-	// Register the Mouse & Keyboard Event-handlers-------------------------------
-	// If users press any keys on the keyboard or move, click or drag the mouse,
-	// the operating system records them as 'events' (small text strings that
-	// can trigger calls to functions within running programs). JavaScript
-	// programs running within HTML webpages can respond to these 'events' if we:
-	//		1) write an 'event handler' function (called when event happens) and
-	//		2) 'register' that function--connect it to the desired HTML page event. //
-	// Here's how to 'register' all mouse events found within our HTML-5 canvas:
-	canvas.onmousedown	=	function(ev){myMouseDown( ev, gl, canvas) };
-	// when user's mouse button goes down, call mouseDown() function
-	canvas.onmousemove = 	function(ev){myMouseMove( ev, gl, canvas) };
-	// when the mouse moves, call mouseMove() function
-	canvas.onmouseup = 		function(ev){myMouseUp(   ev, gl, canvas)};
-	// NOTE! 'onclick' event is SAME as on 'mouseup' event
-	// in Chrome Brower on MS Windows 7, and possibly other
-	// operating systems; thus I use 'mouseup' instead.
-
-	// END Mouse & Keyboard Event-Handlers-----------------------------------
-
 	// Specify the color for clearing <canvas>
 	gl.clearColor(0.3, 0.3, 0.3, 1.0);
 
@@ -568,7 +544,6 @@ function main() {
 	var tick = function() {
 		currentAngle = animate(currentAngle);  // Update the rotation angle
 		animate2();
-		console.log(blinn);
 		gl.uniform1i(u_isBlinn, blinn);
 		gl.uniform1i(u_isGouraud, is_Gouraud);
 		eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
@@ -580,19 +555,15 @@ function main() {
 		}
 		else {
 			lamp1.I_pos.elements.set([g_EyeX, g_EyeY, g_EyeZ]);
-			console.log(g_EyeX, g_EyeY, g_EyeZ);
 			lamp1.I_ambi.elements.set([0.4, 0.4, 0.4]);
 			lamp1.I_diff.elements.set([1.0, 1.0, 1.0]);
 			lamp1.I_spec.elements.set([1.0, 1.0, 1.0]);
 		}
 		drawResize(gl, n);
-//    console.log('currentAngle=',currentAngle); // put text in console.
 		requestAnimationFrame(tick, canvas);
 
-		// Request that the browser re-draw the webpage
-		// (causes webpage to endlessly re-draw itself)
 	};
-	tick();							// start (and continue) animation: draw current image
+	tick();
 
 }
 
@@ -1169,126 +1140,6 @@ function runStop() {
 	}
 }
 
-function clearMouse() {
-// Called when user presses 'Clear' button on our webpage, just below the
-// 'xMdragTot,yMdragTot' display.
-	xMdragTot = 0.0;
-	yMdragTot = 0.0;
-	document.getElementById('MouseText').innerHTML=
-		'Mouse Drag totals (CVV x,y coords):\t'+
-		xMdragTot.toFixed(5)+', \t'+
-		yMdragTot.toFixed(5);
-}
-
-function resetQuat() {
-// Called when user presses 'Reset' button on our webpage, just below the
-// 'Current Quaternion' display.
-	var res=5;
-	qTot.clear();
-	document.getElementById('QuatValue').innerHTML=
-		'\t X=' +qTot.x.toFixed(res)+
-		'i\t Y=' +qTot.y.toFixed(res)+
-		'j\t Z=' +qTot.z.toFixed(res)+
-		'k\t W=' +qTot.w.toFixed(res)+
-		'<br>length='+qTot.length().toFixed(res);
-}
-//===================Mouse and Keyboard event-handling Callbacks
-
-function myMouseDown(ev, gl, canvas) {
-//==============================================================================
-// Called when user PRESSES down any mouse button;
-// 									(Which button?    console.log('ev.button='+ev.button);   )
-// 		ev.clientX, ev.clientY == mouse pointer location, but measured in webpage
-//		pixels: left-handed coords; UPPER left origin; Y increases DOWNWARDS (!)
-
-// Create right-handed 'pixel' coords with origin at WebGL canvas LOWER left;
-	var rect = ev.target.getBoundingClientRect();	// get canvas corners in pixels
-	var xp = ev.clientX - rect.left;									// x==0 at canvas left edge
-	var yp = canvas.height - (ev.clientY - rect.top);	// y==0 at canvas bottom edge
-//  console.log('myMouseDown(pixel coords): xp,yp=\t',xp,',\t',yp);
-
-	// Convert to Canonical View Volume (CVV) coordinates too:
-	var x = (xp - canvas.width/2)  / 		// move origin to center of canvas and
-		(canvas.width/2);			// normalize canvas to -1 <= x < +1,
-	var y = (yp - canvas.height/2) /		//										 -1 <= y < +1.
-		(canvas.height/2);
-//	console.log('myMouseDown(CVV coords  ):  x, y=\t',x,',\t',y);
-
-	isDrag = true;											// set our mouse-dragging flag
-	xMclik = x;													// record where mouse-dragging began
-	yMclik = y;
-};
-
-function myMouseMove(ev, gl, canvas) {
-//==============================================================================
-// Called when user MOVES the mouse with a button already pressed down.
-// 									(Which button?   console.log('ev.button='+ev.button);    )
-// 		ev.clientX, ev.clientY == mouse pointer location, but measured in webpage
-//		pixels: left-handed coords; UPPER left origin; Y increases DOWNWARDS (!)
-
-	if(isDrag==false) return;				// IGNORE all mouse-moves except 'dragging'
-
-	// Create right-handed 'pixel' coords with origin at WebGL canvas LOWER left;
-	var rect = ev.target.getBoundingClientRect();	// get canvas corners in pixels
-	var xp = ev.clientX - rect.left;									// x==0 at canvas left edge
-	var yp = canvas.height - (ev.clientY - rect.top);	// y==0 at canvas bottom edge
-//  console.log('myMouseMove(pixel coords): xp,yp=\t',xp,',\t',yp);
-
-	// Convert to Canonical View Volume (CVV) coordinates too:
-	var x = (xp - canvas.width/2)  / 		// move origin to center of canvas and
-		(canvas.width/2);			// normalize canvas to -1 <= x < +1,
-	var y = (yp - canvas.height/2) /		//										 -1 <= y < +1.
-		(canvas.height/2);
-
-	// find how far we dragged the mouse:
-	xMdragTot += (x - xMclik);					// Accumulate change-in-mouse-position,&
-	yMdragTot += (y - yMclik);
-	// AND use any mouse-dragging we found to update quaternions qNew and qTot.
-	//===================================================
-	xMclik = x;													// Make NEXT drag-measurement from here.
-	yMclik = y;
-
-	// Show it on our webpage, in the <div> element named 'MouseText':
-	document.getElementById('MouseText').innerHTML=
-		'Mouse Drag totals (CVV x,y coords):\t'+
-		xMdragTot.toFixed(5)+', \t'+
-		yMdragTot.toFixed(5);
-};
-
-function myMouseUp(ev, gl, canvas) {
-//==============================================================================
-// Called when user RELEASES mouse button pressed previously.
-// 									(Which button?   console.log('ev.button='+ev.button);    )
-// 		ev.clientX, ev.clientY == mouse pointer location, but measured in webpage
-//		pixels: left-handed coords; UPPER left origin; Y increases DOWNWARDS (!)
-
-// Create right-handed 'pixel' coords with origin at WebGL canvas LOWER left;
-	var rect = ev.target.getBoundingClientRect();	// get canvas corners in pixels
-	var xp = ev.clientX - rect.left;									// x==0 at canvas left edge
-	var yp = canvas.height - (ev.clientY - rect.top);	// y==0 at canvas bottom edge
-//  console.log('myMouseUp  (pixel coords): xp,yp=\t',xp,',\t',yp);
-
-	// Convert to Canonical View Volume (CVV) coordinates too:
-	var x = (xp - canvas.width/2)  / 		// move origin to center of canvas and
-		(canvas.width/2);			// normalize canvas to -1 <= x < +1,
-	var y = (yp - canvas.height/2) /		//										 -1 <= y < +1.
-		(canvas.height/2);
-//	console.log('myMouseUp  (CVV coords  ):  x, y=\t',x,',\t',y);
-
-	isDrag = false;											// CLEAR our mouse-dragging flag, and
-	// accumulate any final bit of mouse-dragging we did:
-	xMdragTot += (x - xMclik);
-	yMdragTot += (y - yMclik);
-//	console.log('myMouseUp: xMdragTot,yMdragTot =',xMdragTot,',\t',yMdragTot);
-
-	// AND use any mouse-dragging we found to update quaternions qNew and qTot;
-	// Show it on our webpage, in the <div> element named 'MouseText':
-	document.getElementById('MouseText').innerHTML=
-		'Mouse Drag totals (CVV x,y coords):\t'+
-		xMdragTot.toFixed(5)+', \t'+
-		yMdragTot.toFixed(5);
-};
-
 
 function myKeyDown(kev) {
 //===============================================================================
@@ -1310,28 +1161,28 @@ function myKeyDown(kev) {
 		"\n--kev.altKey:",  kev.altKey,   "\t--kev.metaKey:", kev.metaKey);
 
 // and report EVERYTHING on webpage:
-	document.getElementById('KeyDownResult').innerHTML = ''; // clear old results
-	document.getElementById('KeyModResult' ).innerHTML = '';
-	// key details:
-	document.getElementById('KeyModResult' ).innerHTML =
-		"   --kev.code:"+kev.code   +"      --kev.key:"+kev.key+
-		"<br>--kev.ctrlKey:"+kev.ctrlKey+" --kev.shiftKey:"+kev.shiftKey+
-		"<br>--kev.altKey:"+kev.altKey +"  --kev.metaKey:"+kev.metaKey;
+// 	document.getElementById('KeyDownResult').innerHTML = ''; // clear old results
+// 	document.getElementById('KeyModResult' ).innerHTML = '';
+// 	// key details:
+// 	document.getElementById('KeyModResult' ).innerHTML =
+// 		"   --kev.code:"+kev.code   +"      --kev.key:"+kev.key+
+// 		"<br>--kev.ctrlKey:"+kev.ctrlKey+" --kev.shiftKey:"+kev.shiftKey+
+// 		"<br>--kev.altKey:"+kev.altKey +"  --kev.metaKey:"+kev.metaKey;
 
 	switch(kev.code) {
 		case "KeyP":
 			console.log("Pause/unPause!\n");                // print on console,
-			document.getElementById('KeyDownResult').innerHTML =
+			// document.getElementById('KeyDownResult').innerHTML =
 				'myKeyDown() found p/P key. Pause/unPause!';   // print on webpage
 			if(g_isRun==true) {
 				g_isRun = false;    // STOP animation
 				runStop();
-				document.getElementById("stop/start").innerText = "both object stop spinning!"
+				// document.getElementById("stop/start").innerText = "both object stop spinning!"
 			}
 			else {
 				g_isRun = true;     // RESTART animation
 				runStop();
-				document.getElementById("stop/start").innerText = "both object start spinning!"
+				// document.getElementById("stop/start").innerText = "both object start spinning!"
 				// tick();
 			}
 			break;
@@ -1344,14 +1195,14 @@ function myKeyDown(kev) {
 			break;
 		case "KeyS":
 			console.log("d/D key: Strafe RIGHT!\n");
-			document.getElementById('KeyDownResult').innerHTML =
-				'myKeyDown() found d/D key. Strafe RIGHT!';
+			// document.getElementById('KeyDownResult').innerHTML =
+			// 	'myKeyDown() found d/D key. Strafe RIGHT!';
 			turn_height -= 0.03;
 			break;
 		case "KeyW":
 			console.log("d/D key: Strafe RIGHT!\n");
-			document.getElementById('KeyDownResult').innerHTML =
-				'myKeyDown() found d/D key. Strafe RIGHT!';
+			// document.getElementById('KeyDownResult').innerHTML =
+			// 	'myKeyDown() found d/D key. Strafe RIGHT!';
 			turn_height += 0.03;
 			break;
 		case "KeyH":
@@ -1370,38 +1221,38 @@ function myKeyDown(kev) {
 		case "ArrowLeft":
 			console.log(' left-arrow.');
 			// and print on webpage in the <div> element with id='Result':
-			document.getElementById('KeyDownResult').innerHTML =
-				'myKeyDown(): Left Arrow='+kev.keyCode;
+			// document.getElementById('KeyDownResult').innerHTML =
+			// 	'myKeyDown(): Left Arrow='+kev.keyCode;
 			g_EyeX -= Math.cos(theta) * sideway;
 			g_EyeY -= -Math.sin(theta) * sideway;
 			break;
 		case "ArrowRight":
 			console.log('right-arrow.');
-			document.getElementById('KeyDownResult').innerHTML =
-				'myKeyDown():Right Arrow:keyCode='+kev.keyCode;
+			// document.getElementById('KeyDownResult').innerHTML =
+			// 	'myKeyDown():Right Arrow:keyCode='+kev.keyCode;
 			g_EyeX -= -Math.cos(theta) * sideway;
 			g_EyeY -= Math.sin(theta) * sideway;
 			break;
 		case "ArrowUp":
 			console.log('   up-arrow.');
-			document.getElementById('KeyDownResult').innerHTML =
-				'myKeyDown():   Up Arrow:keyCode='+kev.keyCode;
+			// document.getElementById('KeyDownResult').innerHTML =
+			// 	'myKeyDown():   Up Arrow:keyCode='+kev.keyCode;
 			g_EyeX += Math.sin(theta) * forward;
 			g_EyeY += Math.cos(theta) * forward;
 			g_EyeZ += turn_height * forward;
 			break;
 		case "ArrowDown":
 			console.log(' down-arrow.');
-			document.getElementById('KeyDownResult').innerHTML =
-				'myKeyDown(): Down Arrow:keyCode='+kev.keyCode;
+			// document.getElementById('KeyDownResult').innerHTML =
+			// 	'myKeyDown(): Down Arrow:keyCode='+kev.keyCode;
 			g_EyeX -= Math.sin(theta) * forward;
 			g_EyeY -= Math.cos(theta) * forward;
 			g_EyeZ -= turn_height * forward;
 			break;
 		default:
 			console.log("UNUSED!");
-			document.getElementById('KeyDownResult').innerHTML =
-				'myKeyDown(): UNUSED!';
+			// document.getElementById('KeyDownResult').innerHTML =
+			// 	'myKeyDown(): UNUSED!';
 			break;
 	}
 }
