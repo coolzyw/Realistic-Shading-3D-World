@@ -701,15 +701,99 @@ function drawGroundGrid(gl, n) {
 
 function drawPyramid(gl, n) {
 	modelMatrix = popMatrix();
-	// (drawing axes centered in CVV), and then make new
-	// drawing axes moved to the lower-left corner of CVV.
-	modelMatrix.scale(2,2,-2);							// convert to left-handed coord sys
-	// to match WebGL display canvas.
-	// (THIS STILL PUZZLES ME!)
-	modelMatrix.scale(0.5, 0.5, 0.5);
-	// if you DON'T scale, tetra goes outside the CVV; clipped!
-	modelMatrix.rotate(currentAngle, 0, 0, 1);  // spin drawing axes on Y axis;
-	modelMatrix.rotate(180, 0, 1, 0);  // spin drawing axes on Y axis;
+
+
+	modelMatrix.translate(0, 0, 0.5);
+	modelMatrix.rotate(90, 1,0, 0);
+	modelMatrix.rotate(currentAngle,0,1, 0);
+	modelMatrix.scale(0.5,0.5,1);
+	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
+	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
+		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
+		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
+		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
+	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
+	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
+		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
+		0.0, 0.0, 1.0);
+	mvpMatrix.multiply(modelMatrix);
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
+
+
+	matl0.setMatl(matlSel2);								// set new material reflectances,
+	//---------------For the Material object(s):
+	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
+	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
+	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
+	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
+	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
+	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
+	// Pass our current Normal matrix to the vertex shaders:
+	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+
+	gl.drawArrays(gl.TRIANGLES,             // use this drawing primitive, and
+		cubeStart / floatsPerVertex, // start at this vertex number, and
+		cubeVerts.length / floatsPerVertex);   // draw this many vertices
+
+
+	pushMatrix(modelMatrix);
+	pushMatrix(modelMatrix);
+	// ----------------------- draw the pyramid side -----------------------
+	modelMatrix = popMatrix();
+	modelMatrix.translate(0,-0.2,1);
+	modelMatrix.rotate(currentAngle * 2,0,0, 1);
+	modelMatrix.scale(2,2,1);
+	modelMatrix.scale(0.5,0.5,0.5);
+
+	// modelMatrix.rotate(c, 0, 1, 0);  // spin drawing axes on Y axis;
+	// Calculate the matrix to transform the normal based on the model matrix
+	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
+	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
+		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
+		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
+		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
+	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
+	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
+		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
+		0.0, 0.0, 1.0);
+	matl0.setMatl(matlSel);
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
+	mvpMatrix.multiply(modelMatrix);
+
+	//-----SEND to GPU & Draw
+	//the first set of vertices stored in our VBO:
+	// Pass our current Model matrix to the vertex shaders:
+	matl0.setMatl(matlSel2);								// set new material reflectances,
+	//---------------For the Material object(s):
+	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
+	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
+	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
+	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
+	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
+	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
+	// Pass our current Normal matrix to the vertex shaders:
+	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+	// Draw triangles: start at vertex 0 and draw 12 vertices
+	gl.drawArrays(gl.TRIANGLES, 0, 12);
+
+
+	// ----------------------- draw the pyramid side -----------------------
+	modelMatrix = popMatrix();
+	modelMatrix.translate(0,-0.2,-1);
+	modelMatrix.rotate(180,1,0, 0);
+	modelMatrix.rotate(currentAngle * 2,0,0, 1);
+	modelMatrix.scale(2,2,1);
+	modelMatrix.scale(0.5,0.5,0.5);
+
+	// modelMatrix.rotate(c, 0, 1, 0);  // spin drawing axes on Y axis;
 	// Calculate the matrix to transform the normal based on the model matrix
 	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
 	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
@@ -748,7 +832,7 @@ function drawPyramid(gl, n) {
 function drawCube(gl, n) {
 	modelMatrix = popMatrix();
 
-	modelMatrix.translate(2, 0,0.5);
+	modelMatrix.translate(3, 0,0.5);
 	modelMatrix.rotate(currentAngle, 0,0, 1);
 	modelMatrix.scale(0.5,0.5,0.5);
 	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
@@ -1518,6 +1602,7 @@ function makeSphere() {
 		}
 	}
 }
+
 
 function initVertexBuffer(gl) {
 //==============================================================================
