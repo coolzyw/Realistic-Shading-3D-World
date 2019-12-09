@@ -1159,10 +1159,13 @@ function runStop() {
 // Called when user presses the 'Run/Stop' button
 	if(ANGLE_STEP*ANGLE_STEP > 1) {
 		myTmp = ANGLE_STEP;
+		g_angle_tmp = g_angleRate01;
 		ANGLE_STEP = 0;
+		g_angleRate01 = 0;
 	}
 	else {
 		ANGLE_STEP = myTmp;
+		g_angleRate01 = g_angle_tmp;
 	}
 }
 
