@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Control Diffuse06</title>
+  </head>
+	<!--	Create the HTML5 'canvas' element in which we will run WebGL
+	-->
+  <body onload="main()" onresize="drawResize()">
+    <canvas id="webgl" width="500" height="500">
+    Please use a browser that supports "canvas"
+    </canvas>
+  <div style="width: 1600px; height: 40px;">
+      <div style="width: 800px; height: 40px;">
+          <div>
+              <input type="checkbox" checked="true" id="light_on_off">
+              <label id="light_status">World Light On</label>
+
+              <input type="range" id="light_x" name="cowbell"
+                     min="-10" max="10" value="6" step="0.5">
+              <label>Light x</label>
+
+              <input type="range" id="light_y" name="cowbell"
+                     min="-10" max="10" value="5" step="0.5">
+              <label>Light y</label>
+
+              <input type="range" id="light_z" name="cowbell"
+                     min="-10" max="10" value="5" step="0.5">
+              <label>Light z</label>
+          </div>
+
+          <div>
+
+              <input type="checkbox" checked="true" id="head_light_on_off">
+              <label id="head_light_status">Head Light On</label>
+
+              <select id="blinn_on_off">
+                  <option value="BlinnOff">Phong Lighting</option>head
+                  <option value="BlinnOn">Blinn-Phong Lighting</option>
+              </select>
+
+              <select id="shader">
+                  <option value="Gouraud">Gouraud Shading</option>
+                  <option value="Phong">Phong Shading</option>
+              </select>
+          </div>
+      </div>
+
+      <div style="width: 1800px; height: 40px; float: left;">
+          <p style="float: left">
+                Control the spin speed of objects
+              <button type="button" onclick="spinDown()">Spin << </button>
+              <button type="button" onclick="runStop()">Run/Stop</button>
+              <button type="button" onclick="spinUp()">Spin >> </button>
+          </p>
+      </div>
+
+      <div style="color: rebeccapurple"> Control the navigation using arrow key </div>
+      <div style="color: deeppink"> Control the aiming direction using WASD </div>
+  </div>
+
+    <script src="../lib/webgl-utils.js"></script>
+    <script src="../lib/webgl-debug.js"></script>
+    <script src="../lib/cuon-utils.js"></script>
+    <script src="../lib/cuon-matrix-quat03.js"></script>
+	<!--	Finally, load in our own JavaScript program file.
+	-->
+    <script src="materials_Ayerdi.js"></script>
+    <script src="lights-JT.js"></script>
+    <script src="ZhangYiwei_ProjC.js"></script>
+
+  </body>
+</html>
