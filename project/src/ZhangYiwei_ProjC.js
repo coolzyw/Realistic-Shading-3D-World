@@ -329,6 +329,9 @@ var matlSel= MATL_RED_PLASTIC;				// see keypress(): 'm' key changes matlSel
 var matlSel2= MATL_RED_PLASTIC + 1;
 var matlSel3= MATL_RED_PLASTIC + 2;
 var matlSel4= MATL_RED_PLASTIC + 5;
+var matlSel5= MATL_RED_PLASTIC + 6;
+var matlSel6= MATL_RED_PLASTIC + 7;
+var matlSel7= MATL_RED_PLASTIC + 8;
 var matl0 = new Material(matlSel);
 
 // --------------------- Global Variables----------------------------------
@@ -656,11 +659,13 @@ function drawAll(gl, n) {
 	pushMatrix(modelMatrix);
 	pushMatrix(modelMatrix);
 	pushMatrix(modelMatrix);
+	pushMatrix(modelMatrix);
 
 	drawGroundGrid(gl, n);
 	drawCube(gl, n);
 	drawPyramid(gl, n);
 	drawSphere(gl, n);
+	drawThirdObject(gl, n);
 
 }
 
@@ -939,6 +944,84 @@ function drawSphere(gl, n) {
 	gl.drawArrays(gl.TRIANGLE_STRIP,             // use this drawing primitive, and
 		sphereStart / floatsPerVertex, // start at this vertex number, and
 		sphVerts.length / floatsPerVertex);   // draw this many vertices
+}
+
+function drawThirdObject(gl, n) {
+	modelMatrix = popMatrix();
+	modelMatrix.translate(-5, 0,1);
+	modelMatrix.rotate(currentAngle, 0,0, 1);
+	modelMatrix.scale(0.1,0.1,1);
+	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
+	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
+		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
+		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
+		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
+	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
+	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
+		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
+		0.0, 0.0, 1.0);
+	mvpMatrix.multiply(modelMatrix);
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
+
+
+	matl0.setMatl(matlSel6);								// set new material reflectances,
+	//---------------For the Material object(s):
+	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
+	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
+	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
+	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
+	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
+	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
+	// Pass our current Normal matrix to the vertex shaders:
+	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+
+	gl.drawArrays(gl.TRIANGLES,             // use this drawing primitive, and
+		cubeStart / floatsPerVertex, // start at this vertex number, and
+		cubeVerts.length / floatsPerVertex);   // draw this many vertices
+
+
+	// ------------------------------ draw the rotating rod
+	modelMatrix.scale(10, 10,1);
+	modelMatrix.translate(0, 0,1.1);
+	modelMatrix.rotate(90, 1,0, 0);
+	modelMatrix.rotate(currentAngle, 0,1, 0);
+	modelMatrix.scale(0.1, 0.1,1);
+
+	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
+	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
+		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
+		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
+		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
+	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
+	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
+		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
+		0.0, 0.0, 1.0);
+	mvpMatrix.multiply(modelMatrix);
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
+
+
+	matl0.setMatl(matlSel6);								// set new material reflectances,
+	//---------------For the Material object(s):
+	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
+	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
+	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
+	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
+	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
+	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
+	// Pass our current Normal matrix to the vertex shaders:
+	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+
+	gl.drawArrays(gl.TRIANGLES,             // use this drawing primitive, and
+		cubeStart / floatsPerVertex, // start at this vertex number, and
+		cubeVerts.length / floatsPerVertex);   // draw this many vertices
 }
 
 // Record the last time we called 'animate()':  (used for animation timing)
