@@ -290,8 +290,12 @@ var FSHADER_SOURCE =
 
 	'}\n';
 
-// Global Variables for the spinning tetrahedron:
+// -------------------- animation-----------------------
 var ANGLE_STEP = 45.0;  // default rotation angle rate (deg/sec)
+var g_angleRate01 = 60;
+var g_angle01 = 0;
+var g_last_rod = Date.now();
+
 
 // Global vars for mouse click-and-drag for rotation.
 var isDrag=false;		// mouse-drag: true when user holds down mouse button
@@ -560,6 +564,7 @@ function main() {
 	//-----------------
 	var tick = function() {
 		currentAngle = animate(currentAngle);  // Update the rotation angle
+		animate2();
 		console.log(blinn);
 		gl.uniform1i(u_isBlinn, blinn);
 		gl.uniform1i(u_isGouraud, is_Gouraud);
@@ -744,7 +749,45 @@ function drawCube(gl, n) {
 	modelMatrix = popMatrix();
 
 	modelMatrix.translate(2, 0,0.5);
+	modelMatrix.rotate(currentAngle, 0,0, 1);
 	modelMatrix.scale(0.5,0.5,0.5);
+	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
+	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
+		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
+		1.0,   // camera z-near distance (always positive; frustum begins at z = -znear)
+		100.0);  // camera z-far distance (always positive; frustum ends at z = -zfar)
+	// console.log("parameters", g_EyeX, g_EyeY, g_EyeZ, theta);
+	mvpMatrix.lookAt(g_EyeX, g_EyeY, g_EyeZ,     // center of projection
+		g_EyeX + Math.sin(theta), g_EyeY + Math.cos(theta), g_EyeZ + turn_height,      // look-at point
+		0.0, 0.0, 1.0);
+	mvpMatrix.multiply(modelMatrix);
+	normalMatrix.setInverseOf(modelMatrix);
+	normalMatrix.transpose();
+
+
+	matl0.setMatl(matlSel3);								// set new material reflectances,
+	//---------------For the Material object(s):
+	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
+	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
+	gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
+	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	eyePosWorld.set([g_EyeX, g_EyeY, g_EyeZ]);
+	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
+	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny
+	gl.uniformMatrix4fv(uLoc_ModelMatrix, false, modelMatrix.elements);
+	// Pass our current Normal matrix to the vertex shaders:
+	gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+	gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+
+	gl.drawArrays(gl.TRIANGLES,             // use this drawing primitive, and
+		cubeStart / floatsPerVertex, // start at this vertex number, and
+		cubeVerts.length / floatsPerVertex);   // draw this many vertices
+
+
+	// --------------------------- draw one jointed location upper half
+	modelMatrix.rotate(g_angle01 -90,0,1,0)
+	modelMatrix.translate(0, 0,2);
+	modelMatrix.scale(0.2,0.2,1);
 	var ratio = gl.drawingBufferWidth / (gl.drawingBufferHeight);
 	mvpMatrix.setPerspective(40.0,   // FOVY: top-to-bottom vertical image angle, in degrees
 		ratio,   // Image Aspect Ratio: camera lens width/height width/height = (right-left) / (top-bottom) = right/top
@@ -829,6 +872,24 @@ function animate(angle) {
 	if(newAngle > 180.0) newAngle = newAngle - 360.0;
 	if(newAngle <-180.0) newAngle = newAngle + 360.0;
 	return newAngle;
+}
+
+// animation for rod
+function animate2() {
+//==============================================================================
+// Calculate the elapsed time; update all animation angles & amounts.
+	var now = Date.now();
+	var elapsed = now - g_last_rod;
+	g_last_rod = now;
+
+	// Update the current rotation angle (adjusted by the elapsed time)
+	// limit the angle to move smoothly between +20 and -85 degrees:
+	//  if(angle >  120.0 && g_angleRate01 > 0) g_angleRate01 = -g_angleRate01;
+	//  if(angle < -120.0 && g_angleRate01 < 0) g_angleRate01 = -g_angleRate01;
+	if(g_angle01 >= 180 && g_angleRate01 > 0) g_angleRate01 = -g_angleRate01;
+	if(g_angle01 <= 0 && g_angleRate01 < 0) g_angleRate01 = -g_angleRate01;
+	g_angle01 = g_angle01 + (g_angleRate01 * elapsed) / 1000.0;
+	// g_angle01 %= 360*3;
 }
 
 //==================HTML Button Callbacks======================
